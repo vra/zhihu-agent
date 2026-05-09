@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦊 刘看山推荐 - AI 驱动的内容发现平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zhihu: '#0066FF',
+                        'zhihu-dark': '#0052CC',
+                        fox: '#FF6B35',
+                        'fox-light': '#FFF3ED',
+                        'fox-dark': '#E55A2B',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #FF6B35 0%, #FF8F65 50%, #0066FF 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+        .score-bar { transition: width 1s ease-out; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-fox { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .pulse-fox { animation: pulse-fox 2s infinite; }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+        .radar-chart { position: relative; width: 200px; height: 200px; }
+        .tab-active { border-bottom: 3px solid #FF6B35; color: #FF6B35; font-weight: 700; }
+        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- ========== 导航栏 ========== -->
+<nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="showPage('home')">
+            <span class="text-3xl">🦊</span>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">刘看山推荐</h1>
+                <p class="text-xs text-gray-400">AI 驱动的内容发现平台</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <button onclick="showPage('home')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">提交评审</button>
+            <button onclick="showPage('ranking')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">推荐榜</button>
+            <button onclick="showPage('profile')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">个人中心</button>
+            <div id="quota-badge" class="bg-fox-light text-fox text-xs font-bold px-3 py-1 rounded-full">
+                额度: <span id="quota-count">3</span>/3
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ========== 主内容区 ========== -->
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+    <!-- ===== 首页：提交评审 ===== -->
+    <div id="page-home" class="page fade-in">
+        <!-- Hero -->
+        <div class="gradient-bg rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-5xl pulse-fox">🦊</span>
+                    <div>
+                        <h2 class="text-3xl font-bold">让优质内容被看见</h2>
+                        <p class="text-white/80 mt-1">每一个认真创作的人，都不该被埋没</p>
+                    </div>
+                </div>
+                <p class="text-white/70 text-sm max-w-xl">
+                    提交你的知乎内容，5 位 AI 评审官将从内容深度、原创性、可读性、专业度、社区价值和人类原创度 6 个维度进行独立评审。
+                    综合评分 ≥ 7.0 即可进入「刘看山推荐榜」！
+                </p>
+            </div>
+            <div class="absolute right-8 top-1/2 -translate-y-1/2 text-9xl opacity-10">🦊</div>
+        </div>
+
+        <!-- 提交方式切换 -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex gap-4 mb-6 border-b">
+                <button id="tab-url" onclick="switchTab('url')" class="pb-3 px-2 text-sm font-medium tab-active">🔗 提交知乎链接</button>
+                <button id="tab-text" onclick="switchTab('text')" class="pb-3 px-2 text-sm font-medium text-gray-400 hover:text-gray-600">📝 直接提交文本</button>
+            </div>
+
+            <!-- URL 提交 -->
+            <div id="form-url">
+                <label class="block text-sm font-medium text-gray-700 mb-2">知乎内容链接</label>
+                <div class="flex gap-3">
+                    <input id="input-url" type="url" placeholder="粘贴知乎回答/文章/想法链接..."
+                           class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm">
+                    <button onclick="submitUrl()" id="btn-submit-url"
+                            class="bg-fox hover:bg-fox-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2 whitespace-nowrap">
+                        🦊 申请推荐
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">支持知乎回答、文章、想法链接。每次提交消耗 1 次额度。</p>
+            </div>
+
+            <!-- 文本提交 -->
+            <div id="form-text" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">内容标题</label>
+                    <input id="input-title" type="text" placeholder="输入内容标题..."
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">内容正文</label>
+                    <textarea id="input-content" rows="8" placeholder="粘贴或输入你的内容..."
+                              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm resize-y"></textarea>
+                </div>
+                <button onclick="submitText()" id="btn-submit-text"
+                        class="bg-fox hover:bg-fox-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2">
+                    🦊 申请推荐
+                </button>
+                <p class="text-xs text-gray-400 mt-2">直接提交文本进行评审（Demo 模式）。每次提交消耗 1 次额度。</p>
+            </div>
+        </div>
+
+        <!-- 评审团介绍 -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">🦊 刘看山评审团</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🎓</div>
+                    <h4 class="font-bold text-sm text-gray-800">学术山</h4>
+                    <p class="text-xs text-gray-500 mt-1">内容深度 · 逻辑论证</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">📖</div>
+                    <h4 class="font-bold text-sm text-gray-800">阅读山</h4>
+                    <p class="text-xs text-gray-500 mt-1">可读性 · 阅读体验</p>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">💡</div>
+                    <h4 class="font-bold text-sm text-gray-800">创意山</h4>
+                    <p class="text-xs text-gray-500 mt-1">原创性 · 独特观点</p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🤝</div>
+                    <h4 class="font-bold text-sm text-gray-800">社区山</h4>
+                    <p class="text-xs text-gray-500 mt-1">社区价值 · 讨论潜力</p>
+                </div>
+                <div class="bg-red-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🔍</div>
+                    <h4 class="font-bold text-sm text-gray-800">鉴真山</h4>
+                    <p class="text-xs text-gray-500 mt-1">AI检测 · 人类原创度</p>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🎯</div>
+                    <h4 class="font-bold text-sm text-gray-800">专业度</h4>
+                    <p class="text-xs text-gray-500 mt-1">引用准确 · 术语规范</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 评审结果页 ===== -->
+    <div id="page-result" class="page hidden fade-in">
+        <div id="result-content"></div>
+    </div>
+
+    <!-- ===== 推荐榜页 ===== -->
+    <div id="page-ranking" class="page hidden fade-in">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">🏆 刘看山推荐榜</h2>
+                <p class="text-sm text-gray-500 mt-1">通过 AI 评审的优质内容，值得你花时间阅读</p>
+            </div>
+            <div class="flex gap-2">
+                <select id="filter-category" onchange="loadRecommendations()"
+                        class="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-fox">
+                    <option value="">全部分类</option>
+                    <option value="科技">科技</option>
+                    <option value="人文">人文</option>
+                    <option value="生活">生活</option>
+                    <option value="职场">职场</option>
+                    <option value="教育">教育</option>
+                    <option value="财经">财经</option>
+                    <option value="健康">健康</option>
+                    <option value="娱乐">娱乐</option>
+                </select>
+                <select id="filter-sort" onchange="loadRecommendations()"
+                        class="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-fox">
+                    <option value="created_at">最新推荐</option>
+                    <option value="score">最高评分</option>
+                </select>
+            </div>
+        </div>
+        <div id="ranking-list" class="space-y-4">
+            <div class="text-center py-12 text-gray-400">
+                <span class="text-4xl">🦊</span>
+                <p class="mt-2">暂无推荐内容，快来提交第一篇吧！</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 个人中心页 ===== -->
+    <div id="page-profile" class="page hidden fade-in">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-fox-light rounded-full flex items-center justify-center text-3xl">🦊</div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800" id="profile-name">演示用户</h2>
+                    <p class="text-sm text-gray-500">知乎 ID: <span id="profile-zhihu-id">demo_user</span></p>
+                </div>
+                <div class="ml-auto text-right">
+                    <div class="text-3xl font-bold text-fox" id="profile-quota">3</div>
+                    <p class="text-xs text-gray-500">本周剩余额度</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-800" id="profile-total">0</div>
+                    <p class="text-xs text-gray-500">总提交数</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="profile-recommended">0</div>
+                    <p class="text-xs text-gray-500">推荐成功</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-fox" id="profile-rate">0%</div>
+                    <p class="text-xs text-gray-500">推荐率</p>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-lg font-bold text-gray-800 mb-4">📋 评审历史</h3>
+        <div id="history-list" class="space-y-3">
+            <div class="text-center py-8 text-gray-400">
+                <p>暂无评审记录</p>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ========== Loading 遮罩 ========== -->
+<div id="loading-overlay" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4">
+        <div class="text-6xl mb-4 pulse-fox">🦊</div>
+        <h3 class="text-lg font-bold text-gray-800 mb-2">刘看山正在召集评审团</h3>
+        <p class="text-sm text-gray-500" id="loading-text">5 位评审官正在认真阅读你的内容<span class="loading-dots"></span></p>
+        <div class="mt-4 flex justify-center gap-2">
+            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0s"></span>
+            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0.2s"></span>
+            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0.4s"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ========== Toast 提示 ========== -->
+<div id="toast" class="hidden fixed top-20 right-4 z-50 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg text-sm max-w-xs"></div>
+
+<!-- ========== JavaScript ========== -->
+<script>
+const API_BASE = window.location.origin;
+let currentUser = { zhihu_id: 'demo_user', zhihu_name: '演示用户' };
+
+// ──── 页面切换 ────
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+    const el = document.getElementById(`page-${page}`);
+    if (el) {
+        el.classList.remove('hidden');
+        el.classList.add('fade-in');
+    }
+    if (page === 'ranking') loadRecommendations();
+    if (page === 'profile') loadProfile();
+}
+
+// ──── Tab 切换 ────
+function switchTab(tab) {
+    document.getElementById('tab-url').classList.toggle('tab-active', tab === 'url');
+    document.getElementById('tab-text').classList.toggle('tab-active', tab === 'text');
+    document.getElementById('tab-url').classList.toggle('text-gray-400', tab !== 'url');
+    document.getElementById('tab-text').classList.toggle('text-gray-400', tab !== 'text');
+    document.getElementById('form-url').classList.toggle('hidden', tab !== 'url');
+    document.getElementById('form-text').classList.toggle('hidden', tab !== 'text');
+}
+
+// ──── Toast ────
+function showToast(msg, duration = 3000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), duration);
+}
+
+// ──── Loading ────
+function showLoading(text) {
+    document.getElementById('loading-text').innerHTML = text + '<span class="loading-dots"></span>';
+    document.getElementById('loading-overlay').classList.remove('hidden');
+}
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.add('hidden');
+}
+
+// ──── 更新额度显示 ────
+async function refreshQuota() {
+    try {
+        const res = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`);
+        const data = await res.json();
+        const q = data.remaining_quota;
+        document.getElementById('quota-count').textContent = q;
+        document.getElementById('profile-quota').textContent = q;
+    } catch(e) { console.error(e); }
+}
+
+// ──── 提交 URL ────
+async function submitUrl() {
+    const url = document.getElementById('input-url').value.trim();
+    if (!url) { showToast('请输入知乎内容链接'); return; }
+    if (!url.includes('zhihu.com') && !url.startsWith('http')) {
+        showToast('请输入有效的知乎链接'); return;
+    }
+
+    showLoading('5 位评审官正在认真阅读你的内容');
+    try {
+        const res = await fetch(`${API_BASE}/api/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content_url: url,
+                zhihu_id: currentUser.zhihu_id,
+                zhihu_name: currentUser.zhihu_name,
+            }),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || '提交失败');
+        }
+        const data = await res.json();
+        hideLoading();
+        showResult(data);
+        refreshQuota();
+        document.getElementById('input-url').value = '';
+    } catch(e) {
+        hideLoading();
+        showToast('❌ ' + e.message);
+    }
+}
+
+// ──── 提交文本 ────
+async function submitText() {
+    const title = document.getElementById('input-title').value.trim();
+    const content = document.getElementById('input-content').value.trim();
+    if (!title || !content) { showToast('请输入标题和内容'); return; }
+    if (content.length < 50) { showToast('内容太短了，至少需要 50 字'); return; }
+
+    showLoading('5 位评审官正在认真阅读你的内容');
+    try {
+        const res = await fetch(`${API_BASE}/api/review-text`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title, content,
+                zhihu_id: currentUser.zhihu_id,
+                zhihu_name: currentUser.zhihu_name,
+            }),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || '提交失败');
+        }
+        const data = await res.json();
+        hideLoading();
+        showResult(data);
+        refreshQuota();
+        document.getElementById('input-title').value = '';
+        document.getElementById('input-content').value = '';
+    } catch(e) {
+        hideLoading();
+        showToast('❌ ' + e.message);
+    }
+}
+
+// ──── 显示评审结果 ────
+function showResult(data) {
+    const isRecommended = data.status === 'recommended';
+    const scores = data.scores;
+    const agents = data.agent_reports || {};
+
+    const scoreItems = [
+        { key: 'depth', label: '🎓 内容深度', color: 'blue' },
+        { key: 'originality', label: '💡 原创性', color: 'yellow' },
+        { key: 'readability', label: '📖 可读性', color: 'green' },
+        { key: 'professionalism', label: '🎯 专业度', color: 'indigo' },
+        { key: 'community', label: '🤝 社区价值', color: 'purple' },
+        { key: 'ai_detection', label: '🔍 人类原创', color: 'red' },
+    ];
+
+    let agentDetailsHtml = '';
+    for (const item of scoreItems) {
+        const agent = agents[item.key] || {};
+        agentDetailsHtml += `
+        <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-medium text-sm">${item.label}</span>
+                <span class="font-bold text-lg ${scores[item.key] >= 7 ? 'text-green-600' : scores[item.key] >= 5 ? 'text-yellow-600' : 'text-red-500'}">${(scores[item.key] || 0).toFixed(1)}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div class="bg-${item.color}-500 h-2 rounded-full score-bar" style="width: ${(scores[item.key] || 0) * 10}%"></div>
+            </div>
+            <p class="text-xs text-gray-500">${agent.comment || ''}</p>
+            <p class="text-xs text-gray-400 mt-1">${agent.details || ''}</p>
+        </div>`;
+    }
+
+    let tipsHtml = '';
+    if (data.improvement_tips && data.improvement_tips.length) {
+        tipsHtml = data.improvement_tips.map((t, i) => `<li class="text-sm text-gray-600">${t}</li>`).join('');
+    }
+
+    const html = `
+    <div class="mb-4">
+        <button onclick="showPage('home')" class="text-sm text-gray-500 hover:text-fox transition">← 返回提交</button>
+    </div>
+
+    <!-- 评审报告卡片 -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <!-- 头部 -->
+        <div class="${isRecommended ? 'bg-gradient-to-r from-fox to-orange-400' : 'bg-gradient-to-r from-gray-600 to-gray-500'} p-6 text-white">
+            <div class="flex items-center gap-4">
+                <span class="text-5xl">${isRecommended ? '🏆' : '📝'}</span>
+                <div>
+                    <h2 class="text-2xl font-bold">${isRecommended ? '推荐成功！' : '暂未推荐'}</h2>
+                    <p class="text-white/80 text-sm mt-1">${isRecommended ? data.recommend_reason || '优质内容，值得推荐' : '继续加油，看看改进建议吧'}</p>
+                </div>
+                <div class="ml-auto text-center">
+                    <div class="text-4xl font-bold">${scores.overall.toFixed(1)}</div>
+                    <div class="text-sm text-white/70">综合评分</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 刘看山点评 -->
+        <div class="p-6 border-b">
+            <div class="flex items-start gap-3">
+                <span class="text-3xl">🦊</span>
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-1">刘看山点评</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">${data.review_summary || '感谢你的创作！'}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 各维度评分 -->
+        <div class="p-6 border-b">
+            <h3 class="font-bold text-gray-800 mb-4">📊 各维度评分</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${agentDetailsHtml}
+            </div>
+        </div>
+
+        <!-- 改进建议 -->
+        ${tipsHtml ? `
+        <div class="p-6">
+            <h3 class="font-bold text-gray-800 mb-3">📈 改进建议</h3>
+            <ol class="list-decimal list-inside space-y-2">
+                ${tipsHtml}
+            </ol>
+        </div>` : ''}
+    </div>`;
+
+    document.getElementById('result-content').innerHTML = html;
+    showPage('result');
+}
+
+// ──── 加载推荐榜 ────
+async function loadRecommendations() {
+    const category = document.getElementById('filter-category').value;
+    const sort = document.getElementById('filter-sort').value;
+    try {
+        const res = await fetch(`${API_BASE}/api/recommendations?limit=20&category=${category}&sort=${sort}`);
+        const data = await res.json();
+        const list = data.recommendations || [];
+
+        if (list.length === 0) {
+            document.getElementById('ranking-list').innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <span class="text-4xl">🦊</span>
+                    <p class="mt-2">暂无推荐内容，快来提交第一篇吧！</p>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+        list.forEach((rec, idx) => {
+            const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+            html += `
+            <div class="bg-white rounded-xl shadow-sm p-5 card-hover">
+                <div class="flex items-start gap-4">
+                    <div class="text-2xl font-bold text-gray-300 w-10 text-center flex-shrink-0">${medal}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="bg-fox-light text-fox text-xs px-2 py-0.5 rounded">${rec.category || '其他'}</span>
+                            <span class="text-xs text-gray-400">${rec.zhihu_name || '匿名'}</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 truncate">${rec.content_title || '无标题'}</h4>
+                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">${rec.content_summary || rec.recommend_reason || ''}</p>
+                        <div class="flex items-center gap-4 mt-3">
+                            <span class="text-xs text-gray-400">🎓 ${(rec.depth_score||0).toFixed(1)}</span>
+                            <span class="text-xs text-gray-400">💡 ${(rec.originality_score||0).toFixed(1)}</span>
+                            <span class="text-xs text-gray-400">📖 ${(rec.readability_score||0).toFixed(1)}</span>
+                            <span class="text-xs text-gray-400">🔍 ${(rec.ai_detection_score||0).toFixed(1)}</span>
+                        </div>
+                    </div>
+                    <div class="text-center flex-shrink-0">
+                        <div class="text-2xl font-bold ${rec.overall_score >= 8 ? 'text-green-600' : 'text-fox'}">${(rec.overall_score||0).toFixed(1)}</div>
+                        <div class="text-xs text-gray-400">综合分</div>
+                    </div>
+                </div>
+                ${rec.recommend_reason ? `<div class="mt-3 pt-3 border-t text-xs text-gray-500">🦊 ${rec.recommend_reason}</div>` : ''}
+            </div>`;
+        });
+        document.getElementById('ranking-list').innerHTML = html;
+    } catch(e) {
+        console.error(e);
+        showToast('加载推荐榜失败');
+    }
+}
+
+// ──── 加载个人中心 ────
+async function loadProfile() {
+    try {
+        const res = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`);
+        const userData = await res.json();
+        const user = userData.user;
+
+        document.getElementById('profile-name').textContent = user.zhihu_name || currentUser.zhihu_name;
+        document.getElementById('profile-zhihu-id').textContent = user.zhihu_id;
+        document.getElementById('profile-quota').textContent = userData.remaining_quota;
+        document.getElementById('profile-total').textContent = user.total_submissions;
+        document.getElementById('profile-recommended').textContent = user.total_recommended;
+        const rate = user.total_submissions > 0 ? Math.round(user.total_recommended / user.total_submissions * 100) : 0;
+        document.getElementById('profile-rate').textContent = rate + '%';
+
+        // 加载历史
+        const histRes = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}/submissions`);
+        const histData = await histRes.json();
+        const submissions = histData.submissions || [];
+
+        if (submissions.length === 0) {
+            document.getElementById('history-list').innerHTML = `
+                <div class="text-center py-8 text-gray-400"><p>暂无评审记录</p></div>`;
+            return;
+        }
+
+        let html = '';
+        submissions.forEach(s => {
+            const isRec = s.status === 'recommended';
+            html += `
+            <div class="bg-white rounded-lg shadow-sm p-4 card-hover cursor-pointer" onclick="viewSubmission(${s.id})">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="${isRec ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'} text-xs px-2 py-0.5 rounded">
+                                ${isRec ? '✅ 已推荐' : s.status === 'pending' ? '⏳ 评审中' : '📝 未推荐'}
+                            </span>
+                            <span class="text-xs text-gray-400">${s.created_at || ''}</span>
+                        </div>
+                        <h4 class="font-medium text-gray-800 mt-1 truncate">${s.content_title || '无标题'}</h4>
+                    </div>
+                    <div class="text-xl font-bold ${(s.overall_score||0) >= 7 ? 'text-green-600' : 'text-gray-400'} ml-4">
+                        ${(s.overall_score||0).toFixed(1)}
+                    </div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('history-list').innerHTML = html;
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// ──── 查看历史评审详情 ────
+async function viewSubmission(id) {
+    showLoading('正在加载评审报告');
+    try {
+        const res = await fetch(`${API_BASE}/api/submission/${id}`);
+        const data = await res.json();
+        hideLoading();
+        showResult({
+            status: data.status,
+            scores: {
+                overall: data.overall_score,
+                depth: data.depth_score,
+                originality: data.originality_score,
+                readability: data.readability_score,
+                professionalism: data.professionalism_score,
+                community: data.community_score,
+                ai_detection: data.ai_detection_score,
+            },
+            review_summary: data.review_summary,
+            improvement_tips: data.improvement_tips || [],
+            recommend_reason: '',
+            agent_reports: data.agent_reports || {},
+        });
+    } catch(e) {
+        hideLoading();
+        showToast('加载失败');
+    }
+}
+
+// ──── 初始化 ────
+document.addEventListener('DOMContentLoaded', () => {
+    refreshQuota();
+});
+</script>
+
+</body>
+</html>
