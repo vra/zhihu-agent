@@ -1,646 +1,629 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>刘看山推荐 — AI 驱动的去中心化内容发现</title>
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦊</text></svg>">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            zhihu: { DEFAULT: '#0066FF', light: '#E8F0FE', dark: '#0050CC' },
-            fox: { DEFAULT: '#FF6B35', light: '#FFF0EB', warm: '#FF8C5A' },
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦊 刘看山推荐 - AI 驱动的内容发现平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zhihu: '#0066FF',
+                        'zhihu-dark': '#0052CC',
+                        fox: '#FF6B35',
+                        'fox-light': '#FFF3ED',
+                        'fox-dark': '#E55A2B',
+                    }
+                }
+            }
         }
-      }
-    }
-  </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
-
-    * {
-      font-family: 'Noto Sans SC', -apple-system, sans-serif;
-    }
-
-    .gradient-bg {
-      background: linear-gradient(135deg, #0066FF 0%, #FF6B35 100%);
-    }
-
-    .glass {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .card-hover {
-      transition: all 0.3s ease;
-    }
-
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    }
-
-    .score-ring {
-      animation: scoreIn 1s ease-out forwards;
-    }
-
-    @keyframes scoreIn {
-      from {
-        stroke-dashoffset: 283;
-      }
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .fade-up {
-      animation: fadeUp 0.6s ease-out forwards;
-    }
-
-    .fade-up-delay-1 {
-      animation-delay: 0.1s;
-      opacity: 0;
-    }
-
-    .fade-up-delay-2 {
-      animation-delay: 0.2s;
-      opacity: 0;
-    }
-
-    .fade-up-delay-3 {
-      animation-delay: 0.3s;
-      opacity: 0;
-    }
-
-    .typing {
-      overflow: hidden;
-      white-space: nowrap;
-      border-right: 2px solid #FF6B35;
-      animation: typing 2s steps(20) forwards, blink 0.8s step-end infinite;
-    }
-
-    @keyframes typing {
-      from {
-        width: 0;
-      }
-
-      to {
-        width: 100%;
-      }
-    }
-
-    @keyframes blink {
-      50% {
-        border-color: transparent;
-      }
-    }
-
-    .pulse-dot {
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.5;
-      }
-    }
-
-    .tab-active {
-      border-bottom: 3px solid #FF6B35;
-      color: #FF6B35;
-      font-weight: 700;
-    }
-
-    #loading-overlay {
-      transition: opacity 0.5s;
-    }
-
-    .agent-card {
-      border-left: 4px solid;
-    }
-  </style>
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #FF6B35 0%, #FF8F65 50%, #0066FF 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+        .score-bar { transition: width 1s ease-out; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-fox { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .pulse-fox { animation: pulse-fox 2s infinite; }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+        .radar-chart { position: relative; width: 200px; height: 200px; }
+        .tab-active { border-bottom: 3px solid #FF6B35; color: #FF6B35; font-weight: 700; }
+        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    </style>
 </head>
-
 <body class="bg-gray-50 min-h-screen">
 
-  <!-- ============ 导航栏 ============ -->
-  <nav class="fixed top-0 w-full z-50 glass shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <a href="#" onclick="showPage('home')" class="flex items-center gap-2 text-xl font-bold">
-        <img src="/assets/liukanshan/liukanshan-logo.png" alt="刘看山" class="w-8 h-8 rounded-full"
-          onerror="this.outerHTML='🦊'">
-        <span class="bg-clip-text text-transparent gradient-bg">刘看山推荐</span>
-      </a>
-      <div class="flex items-center gap-6 text-sm">
-        <a href="#" onclick="showPage('home')" class="hover:text-fox font-medium">首页</a>
-        <a href="#" onclick="showPage('submit')" class="hover:text-fox font-medium">提交评审</a>
-        <a href="#" onclick="showPage('board')" class="hover:text-fox font-medium">推荐榜</a>
-        <a href="#" onclick="showPage('about')" class="hover:text-fox font-medium">关于</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- ============ 首页 ============ -->
-  <div id="page-home" class="page pt-16">
-    <!-- Hero -->
-    <section class="gradient-bg text-white py-20 px-4">
-      <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-4xl md:text-5xl font-black mb-6 leading-tight">
-          让优质内容被看见<br>
-          <span class="text-yellow-200">不论你有多少粉丝</span>
-        </h1>
-        <p class="text-lg md:text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-          6 位 AI 评审官从深度、原创性、可读性、专业度、社区价值、人类原创度六大维度独立评审，
-          用实力说话，让好内容自己发光。
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button onclick="showPage('submit')"
-            class="bg-white text-zhihu px-8 py-3 rounded-full font-bold text-lg hover:shadow-lg transition">
-            🚀 提交内容评审
-          </button>
-          <button onclick="showPage('board')"
-            class="border-2 border-white text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-white/10 transition">
-            🏆 查看推荐榜
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 评审团介绍 -->
-    <section class="py-16 px-4">
-      <div class="max-w-6xl mx-auto">
-        <h2 class="text-3xl font-bold text-center mb-4">🦊 刘看山评审团</h2>
-        <p class="text-gray-500 text-center mb-12">6 位 AI 评审官，各司其职，独立打分</p>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-white rounded-2xl p-6 card-hover shadow-sm agent-card border-blue-500">
-            <div class="text-3xl mb-3">🎓</div>
-            <h3 class="font-bold text-lg mb-2">学术山</h3>
-            <p class="text-gray-500 text-sm">评估内容深度、论证充分性、逻辑自洽性和独到见解</p>
-            <div class="mt-3 text-xs text-blue-500 font-medium">权重 20%</div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 card-hover shadow-sm agent-card border-purple-500">
-            <div class="text-3xl mb-3">💡</div>
-            <h3 class="font-bold text-lg mb-2">创意山</h3>
-            <p class="text-gray-500 text-sm">评估观点独特性、内容新颖度、非搬运/洗稿程度</p>
-            <div class="mt-3 text-xs text-purple-500 font-medium">权重 20%</div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 card-hover shadow-sm agent-card border-green-500">
-            <div class="text-3xl mb-3">📖</div>
-            <h3 class="font-bold text-lg mb-2">阅读山</h3>
-            <p class="text-gray-500 text-sm">评估结构清晰度、表达流畅度、排版友好度</p>
-            <div class="mt-3 text-xs text-green-500 font-medium">权重 15%</div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 card-hover shadow-sm agent-card border-yellow-500">
-            <div class="text-3xl mb-3">🎯</div>
-            <h3 class="font-bold text-lg mb-2">专业山</h3>
-            <p class="text-gray-500 text-sm">评估引用准确性、术语使用、事实核查、方法论</p>
-            <div class="mt-3 text-xs text-yellow-600 font-medium">权重 15%</div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 card-hover shadow-sm agent-card border-pink-500">
-            <div class="text-3xl mb-3">🤝</div>
-            <h3 class="font-bold text-lg mb-2">社区山</h3>
-            <p class="text-gray-500 text-sm">评估讨论价值、帮助他人、知识贡献、互动潜力</p>
-            <div class="mt-3 text-xs text-pink-500 font-medium">权重 15%</div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 card-hover shadow-sm agent-card border-red-500">
-            <div class="text-3xl mb-3">🔍</div>
-            <h3 class="font-bold text-lg mb-2">鉴真山</h3>
-            <p class="text-gray-500 text-sm">检测 AI 生成痕迹，鼓励真实人类创作</p>
-            <div class="mt-3 text-xs text-red-500 font-medium">权重 15%</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 工作流程 -->
-    <section class="py-16 px-4 bg-white">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-3xl font-bold text-center mb-12">📋 评审流程</h2>
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div class="text-center flex-1">
-            <div class="w-16 h-16 bg-zhihu-light rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">📝
+<!-- ========== 导航栏 ========== -->
+<nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="showPage('home')">
+            <span class="text-3xl">🦊</span>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">刘看山推荐</h1>
+                <p class="text-xs text-gray-400">AI 驱动的内容发现平台</p>
             </div>
-            <h4 class="font-bold">提交内容</h4>
-            <p class="text-sm text-gray-500 mt-1">粘贴知乎链接<br>或直接输入文本</p>
-          </div>
-          <div class="text-gray-300 text-2xl hidden md:block">→</div>
-          <div class="text-center flex-1">
-            <div class="w-16 h-16 bg-fox-light rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">🤖
+        </div>
+        <div class="flex items-center gap-6">
+            <button onclick="showPage('home')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">申请推荐</button>
+            <button onclick="showPage('ranking')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">推荐榜</button>
+            <button onclick="showPage('profile')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">个人中心</button>
+            <div id="quota-badge" class="bg-fox-light text-fox text-xs font-bold px-3 py-1 rounded-full">
+                额度: <span id="quota-count">3</span>/3
             </div>
-            <h4 class="font-bold">6 Agent 评审</h4>
-            <p class="text-sm text-gray-500 mt-1">并行独立评审<br>六大维度打分</p>
-          </div>
-          <div class="text-gray-300 text-2xl hidden md:block">→</div>
-          <div class="text-center flex-1">
-            <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">🦊
+        </div>
+    </div>
+</nav>
+
+<!-- ========== 主内容区 ========== -->
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+    <!-- ===== 首页：提交评审 ===== -->
+    <div id="page-home" class="page fade-in">
+        <!-- Hero -->
+        <div class="gradient-bg rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-5xl pulse-fox">🦊</span>
+                    <div>
+                        <h2 class="text-3xl font-bold">让优质内容被看见</h2>
+                        <p class="text-white/80 mt-1">每一个认真创作的人，都不该被埋没</p>
+                    </div>
+                </div>
+                <p class="text-white/70 text-sm max-w-xl">
+                    提交你的知乎内容，5 位 AI 评审官将从内容深度、原创性、可读性、专业度、社区价值和人类原创度 6 个维度进行独立评审。
+                    综合评分 ≥ 7.0 即可进入「刘看山推荐榜」！
+                </p>
             </div>
-            <h4 class="font-bold">刘看山汇总</h4>
-            <p class="text-sm text-gray-500 mt-1">综合评语<br>改进建议</p>
-          </div>
-          <div class="text-gray-300 text-2xl hidden md:block">→</div>
-          <div class="text-center flex-1">
-            <div class="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">🏆
+            <div class="absolute right-8 top-1/2 -translate-y-1/2 text-9xl opacity-10">🦊</div>
+        </div>
+
+        <!-- 提交方式切换 -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex gap-4 mb-6 border-b">
+                <button id="tab-url" onclick="switchTab('url')" class="pb-3 px-2 text-sm font-medium tab-active">🔗 提交知乎链接</button>
+                <button id="tab-text" onclick="switchTab('text')" class="pb-3 px-2 text-sm font-medium text-gray-400 hover:text-gray-600">📝 直接提交文本</button>
             </div>
-            <h4 class="font-bold">推荐上榜</h4>
-            <p class="text-sm text-gray-500 mt-1">≥7分自动推荐<br>发布到知乎圈子</p>
-          </div>
+
+            <!-- URL 提交 -->
+            <div id="form-url">
+                <label class="block text-sm font-medium text-gray-700 mb-2">知乎内容链接</label>
+                <div class="flex gap-3">
+                    <input id="input-url" type="url" placeholder="粘贴知乎回答/文章/想法链接..."
+                           class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm">
+                    <button onclick="submitUrl()" id="btn-submit-url"
+                            class="bg-fox hover:bg-fox-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2 whitespace-nowrap">
+                        🦊 申请推荐
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">支持知乎回答、文章、想法链接。每次提交消耗 1 次额度。</p>
+            </div>
+
+            <!-- 文本提交 -->
+            <div id="form-text" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">内容标题</label>
+                    <input id="input-title" type="text" placeholder="输入内容标题..."
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">内容正文</label>
+                    <textarea id="input-content" rows="8" placeholder="粘贴或输入你的内容..."
+                              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm resize-y"></textarea>
+                </div>
+                <button onclick="submitText()" id="btn-submit-text"
+                        class="bg-fox hover:bg-fox-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2">
+                    🦊 申请推荐
+                </button>
+                <p class="text-xs text-gray-400 mt-2">直接提交文本进行评审（Demo 模式）。每次提交消耗 1 次额度。</p>
+            </div>
         </div>
-      </div>
-    </section>
-  </div>
 
-  <!-- ============ 提交评审页 ============ -->
-  <div id="page-submit" class="page pt-20 hidden">
-    <div class="max-w-3xl mx-auto px-4 pb-16">
-      <h2 class="text-3xl font-bold mb-2">📝 提交内容评审</h2>
-      <p class="text-gray-500 mb-8">提交你的知乎内容，让 6 位 AI 评审官为你打分</p>
-
-      <!-- Tab 切换 -->
-      <div class="flex border-b mb-6">
-        <button onclick="switchTab('url')" id="tab-url" class="px-6 py-3 text-sm tab-active">🔗 知乎链接</button>
-        <button onclick="switchTab('text')" id="tab-text" class="px-6 py-3 text-sm text-gray-500 hover:text-fox">📄
-          直接输入文本</button>
-      </div>
-
-      <!-- URL 提交 -->
-      <div id="form-url">
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-2">知乎内容链接</label>
-          <input id="input-url" type="url" placeholder="https://www.zhihu.com/question/xxx/answer/xxx"
-            class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-fox focus:border-fox outline-none">
-          <p class="text-xs text-gray-400 mt-1">支持知乎回答、文章、想法链接</p>
+        <!-- 评审团介绍 -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">🦊 刘看山评审团</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🎓</div>
+                    <h4 class="font-bold text-sm text-gray-800">学术山</h4>
+                    <p class="text-xs text-gray-500 mt-1">内容深度 · 逻辑论证</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">📖</div>
+                    <h4 class="font-bold text-sm text-gray-800">阅读山</h4>
+                    <p class="text-xs text-gray-500 mt-1">可读性 · 阅读体验</p>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">💡</div>
+                    <h4 class="font-bold text-sm text-gray-800">创意山</h4>
+                    <p class="text-xs text-gray-500 mt-1">原创性 · 独特观点</p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🤝</div>
+                    <h4 class="font-bold text-sm text-gray-800">社区山</h4>
+                    <p class="text-xs text-gray-500 mt-1">社区价值 · 讨论潜力</p>
+                </div>
+                <div class="bg-red-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🔍</div>
+                    <h4 class="font-bold text-sm text-gray-800">鉴真山</h4>
+                    <p class="text-xs text-gray-500 mt-1">AI检测 · 人类原创度</p>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-4 text-center card-hover">
+                    <div class="text-3xl mb-2">🎯</div>
+                    <h4 class="font-bold text-sm text-gray-800">专业度</h4>
+                    <p class="text-xs text-gray-500 mt-1">引用准确 · 术语规范</p>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <!-- 文本提交 -->
-      <div id="form-text" class="hidden">
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-2">标题</label>
-          <input id="input-title" type="text" placeholder="输入内容标题"
-            class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-fox focus:border-fox outline-none">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-2">正文内容</label>
-          <textarea id="input-content" rows="10" placeholder="粘贴或输入你的内容..."
-            class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-fox focus:border-fox outline-none resize-y"></textarea>
-          <p class="text-xs text-gray-400 mt-1">建议 300 字以上，内容越充分评审越准确</p>
-        </div>
-      </div>
-
-      <button onclick="submitReview()" id="btn-submit"
-        class="w-full gradient-bg text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition flex items-center justify-center gap-2">
-        🦊 开始评审
-      </button>
     </div>
 
-    <!-- 评审结果区域 -->
-    <div id="review-result" class="hidden max-w-4xl mx-auto px-4 pb-16">
-      <!-- 动态填充 -->
+    <!-- ===== 评审结果页 ===== -->
+    <div id="page-result" class="page hidden fade-in">
+        <div id="result-content"></div>
     </div>
-  </div>
 
-  <!-- ============ 推荐榜页 ============ -->
-  <div id="page-board" class="page pt-20 hidden">
-    <div class="max-w-4xl mx-auto px-4 pb-16">
-      <h2 class="text-3xl font-bold mb-2">🏆 刘看山推荐榜</h2>
-      <p class="text-gray-500 mb-8">经 AI 评审团认证的优质内容</p>
-      <div id="board-list" class="space-y-4">
-        <div class="text-center py-12 text-gray-400">
-          <div class="text-4xl mb-4">🦊</div>
-          <p>暂无推荐内容，快去提交你的作品吧！</p>
+    <!-- ===== 推荐榜页 ===== -->
+    <div id="page-ranking" class="page hidden fade-in">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">🏆 刘看山推荐榜</h2>
+                <p class="text-sm text-gray-500 mt-1">通过 AI 评审的优质内容，值得你花时间阅读</p>
+            </div>
+            <div class="flex gap-2">
+                <select id="filter-category" onchange="loadRecommendations()"
+                        class="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-fox">
+                    <option value="">全部分类</option>
+                    <option value="科技">科技</option>
+                    <option value="人文">人文</option>
+                    <option value="生活">生活</option>
+                    <option value="职场">职场</option>
+                    <option value="教育">教育</option>
+                    <option value="财经">财经</option>
+                    <option value="健康">健康</option>
+                    <option value="娱乐">娱乐</option>
+                </select>
+                <select id="filter-sort" onchange="loadRecommendations()"
+                        class="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-fox">
+                    <option value="created_at">最新推荐</option>
+                    <option value="score">最高评分</option>
+                </select>
+            </div>
         </div>
-      </div>
+        <div id="ranking-list" class="space-y-4">
+            <div class="text-center py-12 text-gray-400">
+                <span class="text-4xl">🦊</span>
+                <p class="mt-2">暂无推荐内容，快来提交第一篇吧！</p>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- ============ 关于页 ============ -->
-  <div id="page-about" class="page pt-20 hidden">
-    <div class="max-w-3xl mx-auto px-4 pb-16">
-      <h2 class="text-3xl font-bold mb-6">关于刘看山推荐</h2>
-      <div class="bg-white rounded-2xl p-8 shadow-sm space-y-6">
-        <div>
-          <h3 class="font-bold text-xl mb-3">🎯 解决什么问题？</h3>
-          <p class="text-gray-600 leading-relaxed">
-            在知乎，新人创作者面临一个困境：<strong>没有粉丝 → 内容没有曝光 → 无法获得粉丝</strong>。
-            优质内容被埋没，创作者失去动力。刘看山推荐通过 AI 评审打破这个恶性循环——
-            <strong>不看粉丝数，只看内容质量</strong>。
-          </p>
+    <!-- ===== 个人中心页 ===== -->
+    <div id="page-profile" class="page hidden fade-in">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-fox-light rounded-full flex items-center justify-center text-3xl">🦊</div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800" id="profile-name">演示用户</h2>
+                    <p class="text-sm text-gray-500">知乎 ID: <span id="profile-zhihu-id">demo_user</span></p>
+                </div>
+                <div class="ml-auto text-right">
+                    <div class="text-3xl font-bold text-fox" id="profile-quota">3</div>
+                    <p class="text-xs text-gray-500">本周剩余额度</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-800" id="profile-total">0</div>
+                    <p class="text-xs text-gray-500">总提交数</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="profile-recommended">0</div>
+                    <p class="text-xs text-gray-500">推荐成功</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-fox" id="profile-rate">0%</div>
+                    <p class="text-xs text-gray-500">推荐率</p>
+                </div>
+            </div>
         </div>
-        <div>
-          <h3 class="font-bold text-xl mb-3">🤖 怎么做到公平？</h3>
-          <p class="text-gray-600 leading-relaxed">
-            6 位 AI 评审官独立评审，各有专长，互不干扰。评审维度涵盖深度、原创性、可读性、
-            专业度、社区价值和人类原创度。加权综合得分 ≥ 7 分即可获得推荐，发布到知乎圈子获得曝光。
-          </p>
+
+        <h3 class="text-lg font-bold text-gray-800 mb-4">📋 评审历史</h3>
+        <div id="history-list" class="space-y-3">
+            <div class="text-center py-8 text-gray-400">
+                <p>暂无评审记录</p>
+            </div>
         </div>
-        <div>
-          <h3 class="font-bold text-xl mb-3">🛡️ 防刷机制</h3>
-          <ul class="text-gray-600 space-y-2">
-            <li>• 每周推荐额度限制，防止滥用</li>
-            <li>• AI 原创度检测，打击 AI 水文</li>
-            <li>• 重复内容检测，防止重复提交</li>
-            <li>• 推荐成功奖励额度，激励优质创作</li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-bold text-xl mb-3">🏗️ 技术架构</h3>
-          <p class="text-gray-600 leading-relaxed">
-            后端：Python FastAPI + SQLite + OpenAI Multi-Agent<br>
-            前端：原生 HTML/CSS/JS + Tailwind CSS + Chart.js<br>
-            部署：EdgeOne Pages（前端）+ Docker（后端）<br>
-            API：知乎开放平台 OpenAPI
-          </p>
-        </div>
-        <div class="pt-4 border-t text-center text-sm text-gray-400">
-          Made with 🦊 for 知乎 Hackathon 2026 — AI 脑洞实验室
-        </div>
-      </div>
     </div>
-  </div>
 
-  <!-- ============ Loading Overlay ============ -->
-  <div id="loading-overlay" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center">
-      <div class="text-5xl mb-4 animate-bounce">🦊</div>
-      <h3 class="font-bold text-lg mb-2">评审团正在审阅中...</h3>
-      <div id="loading-agents" class="text-left space-y-2 mt-4 text-sm">
-        <div class="flex items-center gap-2"><span class="pulse-dot text-blue-500">●</span> 🎓 学术山 正在评估内容深度...</div>
-        <div class="flex items-center gap-2"><span class="pulse-dot text-purple-500"
-            style="animation-delay:0.3s">●</span> 💡 创意山 正在评估原创性...</div>
-        <div class="flex items-center gap-2"><span class="pulse-dot text-green-500"
-            style="animation-delay:0.6s">●</span> 📖 阅读山 正在评估可读性...</div>
-        <div class="flex items-center gap-2"><span class="pulse-dot text-yellow-500"
-            style="animation-delay:0.9s">●</span> 🎯 专业山 正在评估专业度...</div>
-        <div class="flex items-center gap-2"><span class="pulse-dot text-pink-500" style="animation-delay:1.2s">●</span>
-          🤝 社区山 正在评估社区价值...</div>
-        <div class="flex items-center gap-2"><span class="pulse-dot text-red-500" style="animation-delay:1.5s">●</span>
-          🔍 鉴真山 正在检测原创度...</div>
-      </div>
-      <p class="text-xs text-gray-400 mt-4">通常需要 15-30 秒，请耐心等待</p>
+</main>
+
+<!-- ========== Loading 遮罩 ========== -->
+<div id="loading-overlay" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4">
+        <div class="text-6xl mb-4 pulse-fox">🦊</div>
+        <h3 class="text-lg font-bold text-gray-800 mb-2">刘看山正在召集评审团</h3>
+        <p class="text-sm text-gray-500" id="loading-text">5 位评审官正在认真阅读你的内容<span class="loading-dots"></span></p>
+        <div class="mt-4 flex justify-center gap-2">
+            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0s"></span>
+            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0.2s"></span>
+            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0.4s"></span>
+        </div>
     </div>
-  </div>
+</div>
 
-  <!-- ============ JavaScript ============ -->
-  <script>
-    // ---- 配置 ----
-    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:8000'
-      : (window.API_BASE || '');
+<!-- ========== Toast 提示 ========== -->
+<div id="toast" class="hidden fixed top-20 right-4 z-50 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg text-sm max-w-xs"></div>
 
-    // ---- 页面路由 ----
-    function showPage(name) {
-      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-      const page = document.getElementById('page-' + name);
-      if (page) page.classList.remove('hidden');
-      window.scrollTo(0, 0);
-      if (name === 'board') loadRecommendations();
+<!-- ========== JavaScript ========== -->
+<script>
+const API_BASE = window.location.origin;
+let currentUser = { zhihu_id: 'demo_user', zhihu_name: '演示用户' };
+
+// ──── 页面切换 ────
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+    const el = document.getElementById(`page-${page}`);
+    if (el) {
+        el.classList.remove('hidden');
+        el.classList.add('fade-in');
+    }
+    if (page === 'ranking') loadRecommendations();
+    if (page === 'profile') loadProfile();
+}
+
+// ──── Tab 切换 ────
+function switchTab(tab) {
+    document.getElementById('tab-url').classList.toggle('tab-active', tab === 'url');
+    document.getElementById('tab-text').classList.toggle('tab-active', tab === 'text');
+    document.getElementById('tab-url').classList.toggle('text-gray-400', tab !== 'url');
+    document.getElementById('tab-text').classList.toggle('text-gray-400', tab !== 'text');
+    document.getElementById('form-url').classList.toggle('hidden', tab !== 'url');
+    document.getElementById('form-text').classList.toggle('hidden', tab !== 'text');
+}
+
+// ──── Toast ────
+function showToast(msg, duration = 3000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), duration);
+}
+
+// ──── Loading ────
+function showLoading(text) {
+    document.getElementById('loading-text').innerHTML = text + '<span class="loading-dots"></span>';
+    document.getElementById('loading-overlay').classList.remove('hidden');
+}
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.add('hidden');
+}
+
+// ──── 更新额度显示 ────
+async function refreshQuota() {
+    try {
+        const res = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`);
+        const data = await res.json();
+        const q = data.remaining_quota;
+        document.getElementById('quota-count').textContent = q;
+        document.getElementById('profile-quota').textContent = q;
+    } catch(e) { console.error(e); }
+}
+
+// ──── 提交 URL ────
+async function submitUrl() {
+    const url = document.getElementById('input-url').value.trim();
+    if (!url) { showToast('请输入知乎内容链接'); return; }
+    if (!url.includes('zhihu.com') && !url.startsWith('http')) {
+        showToast('请输入有效的知乎链接'); return;
     }
 
-    // ---- Tab 切换 ----
-    function switchTab(tab) {
-      document.getElementById('form-url').classList.toggle('hidden', tab !== 'url');
-      document.getElementById('form-text').classList.toggle('hidden', tab !== 'text');
-      document.getElementById('tab-url').classList.toggle('tab-active', tab === 'url');
-      document.getElementById('tab-text').classList.toggle('tab-active', tab === 'text');
-      document.getElementById('tab-url').classList.toggle('text-gray-500', tab !== 'url');
-      document.getElementById('tab-text').classList.toggle('text-gray-500', tab !== 'text');
-    }
-
-    // ---- 提交评审 ----
-    async function submitReview() {
-      const isUrl = !document.getElementById('form-url').classList.contains('hidden');
-      let body;
-
-      if (isUrl) {
-        const url = document.getElementById('input-url').value.trim();
-        if (!url) return alert('请输入知乎内容链接');
-        body = { content_url: url, zhihu_id: 'demo_user', zhihu_name: '体验用户' };
-      } else {
-        const title = document.getElementById('input-title').value.trim();
-        const content = document.getElementById('input-content').value.trim();
-        if (!title || !content) return alert('请输入标题和正文');
-        body = { title, content, zhihu_id: 'demo_user', zhihu_name: '体验用户' };
-      }
-
-      // 显示 loading
-      document.getElementById('loading-overlay').classList.remove('hidden');
-      document.getElementById('btn-submit').disabled = true;
-
-      try {
-        const endpoint = isUrl ? '/api/submit' : '/api/review-text';
-        const resp = await fetch(API_BASE + endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
+    showLoading('5 位评审官正在认真阅读你的内容');
+    try {
+        const res = await fetch(`${API_BASE}/api/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content_url: url,
+                zhihu_id: currentUser.zhihu_id,
+                zhihu_name: currentUser.zhihu_name,
+            }),
         });
-
-        if (!resp.ok) {
-          const err = await resp.json().catch(() => ({}));
-          throw new Error(err.detail || `请求失败 (${resp.status})`);
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || '提交失败');
         }
-
-        const data = await resp.json();
-        renderResult(data);
-      } catch (e) {
-        alert('评审失败: ' + e.message);
-      } finally {
-        document.getElementById('loading-overlay').classList.add('hidden');
-        document.getElementById('btn-submit').disabled = false;
-      }
+        const data = await res.json();
+        hideLoading();
+        showResult(data);
+        refreshQuota();
+        document.getElementById('input-url').value = '';
+    } catch(e) {
+        hideLoading();
+        showToast('❌ ' + e.message);
     }
+}
 
-    // ---- 渲染评审结果 ----
-    function renderResult(data) {
-      const container = document.getElementById('review-result');
-      container.classList.remove('hidden');
-      container.scrollIntoView({ behavior: 'smooth' });
+// ──── 提交文本 ────
+async function submitText() {
+    const title = document.getElementById('input-title').value.trim();
+    const content = document.getElementById('input-content').value.trim();
+    if (!title || !content) { showToast('请输入标题和内容'); return; }
+    if (content.length < 50) { showToast('内容太短了，至少需要 50 字'); return; }
 
-      const isRecommended = data.status === 'recommended';
-      const scores = data.scores;
-      const agents = data.agent_reports || {};
+    showLoading('5 位评审官正在认真阅读你的内容');
+    try {
+        const res = await fetch(`${API_BASE}/api/review-text`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title, content,
+                zhihu_id: currentUser.zhihu_id,
+                zhihu_name: currentUser.zhihu_name,
+            }),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || '提交失败');
+        }
+        const data = await res.json();
+        hideLoading();
+        showResult(data);
+        refreshQuota();
+        document.getElementById('input-title').value = '';
+        document.getElementById('input-content').value = '';
+    } catch(e) {
+        hideLoading();
+        showToast('❌ ' + e.message);
+    }
+}
 
-      const agentColors = {
-        depth: { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-600' },
-        originality: { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-600' },
-        readability: { bg: 'bg-green-50', border: 'border-green-500', text: 'text-green-600' },
-        professionalism: { bg: 'bg-yellow-50', border: 'border-yellow-500', text: 'text-yellow-600' },
-        community: { bg: 'bg-pink-50', border: 'border-pink-500', text: 'text-pink-600' },
-        ai_detection: { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-600' },
-      };
+// ──── 显示评审结果 ────
+function showResult(data) {
+    const isRecommended = data.status === 'recommended';
+    const scores = data.scores;
+    const agents = data.agent_reports || {};
 
-      container.innerHTML = `
-    <!-- 总分卡片 -->
-    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6 fade-up">
-      <div class="flex flex-col md:flex-row items-center gap-8">
-        <div class="relative">
-          <svg width="160" height="160" viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="70" fill="none" stroke="#f0f0f0" stroke-width="10"/>
-            <circle cx="80" cy="80" r="70" fill="none"
-                    stroke="${isRecommended ? '#22c55e' : '#f59e0b'}"
-                    stroke-width="10" stroke-linecap="round"
-                    stroke-dasharray="${(scores.overall / 10) * 440} 440"
-                    transform="rotate(-90 80 80)"
-                    class="score-ring"/>
-          </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <span class="text-4xl font-black">${scores.overall.toFixed(1)}</span>
-            <span class="text-sm text-gray-400">/ 10</span>
-          </div>
-        </div>
-        <div class="flex-1 text-center md:text-left">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold mb-3 ${isRecommended ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-            ${isRecommended ? '🏆 推荐成功！' : '📝 暂未达到推荐标准'}
-          </div>
-          <p class="text-gray-600 leading-relaxed">${data.review_summary || ''}</p>
-          ${data.recommend_reason ? `<p class="mt-2 text-sm text-fox font-medium">推荐理由：${data.recommend_reason}</p>` : ''}
-        </div>
-      </div>
-    </div>
+    const scoreItems = [
+        { key: 'depth', label: '🎓 内容深度', color: 'blue' },
+        { key: 'originality', label: '💡 原创性', color: 'yellow' },
+        { key: 'readability', label: '📖 可读性', color: 'green' },
+        { key: 'professionalism', label: '🎯 专业度', color: 'indigo' },
+        { key: 'community', label: '🤝 社区价值', color: 'purple' },
+        { key: 'ai_detection', label: '🔍 人类原创', color: 'red' },
+    ];
 
-    <!-- 雷达图 -->
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 fade-up fade-up-delay-1">
-      <h3 class="font-bold text-lg mb-4">📊 维度评分</h3>
-      <div class="max-w-md mx-auto">
-        <canvas id="radar-chart" height="300"></canvas>
-      </div>
-    </div>
-
-    <!-- 各 Agent 详细报告 -->
-    <div class="space-y-4 mb-6 fade-up fade-up-delay-2">
-      <h3 class="font-bold text-lg">🤖 评审团详细报告</h3>
-      ${Object.entries(agents).map(([key, agent]) => {
-        const c = agentColors[key] || { bg: 'bg-gray-50', border: 'border-gray-400', text: 'text-gray-600' };
-        return `
-        <div class="bg-white rounded-xl p-5 shadow-sm agent-card ${c.border}">
-          <div class="flex items-center justify-between mb-2">
-            <span class="font-bold">${agent.name}</span>
-            <span class="text-lg font-black ${c.text}">${agent.score.toFixed(1)}</span>
-          </div>
-          <p class="text-sm text-gray-500 mb-1">${agent.comment}</p>
-          <p class="text-xs text-gray-400">${agent.details}</p>
+    let agentDetailsHtml = '';
+    for (const item of scoreItems) {
+        const agent = agents[item.key] || {};
+        agentDetailsHtml += `
+        <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-medium text-sm">${item.label}</span>
+                <span class="font-bold text-lg ${scores[item.key] >= 7 ? 'text-green-600' : scores[item.key] >= 5 ? 'text-yellow-600' : 'text-red-500'}">${(scores[item.key] || 0).toFixed(1)}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div class="bg-${item.color}-500 h-2 rounded-full score-bar" style="width: ${(scores[item.key] || 0) * 10}%"></div>
+            </div>
+            <p class="text-xs text-gray-500">${agent.comment || ''}</p>
+            <p class="text-xs text-gray-400 mt-1">${agent.details || ''}</p>
         </div>`;
-      }).join('')}
+    }
+
+    let tipsHtml = '';
+    if (data.improvement_tips && data.improvement_tips.length) {
+        tipsHtml = data.improvement_tips.map((t, i) => `<li class="text-sm text-gray-600">${t}</li>`).join('');
+    }
+
+    const html = `
+    <div class="mb-4">
+        <button onclick="showPage('home')" class="text-sm text-gray-500 hover:text-fox transition">← 返回提交</button>
     </div>
 
-    <!-- 改进建议 -->
-    ${data.improvement_tips && data.improvement_tips.length > 0 ? `
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 fade-up fade-up-delay-3">
-      <h3 class="font-bold text-lg mb-4">💡 改进建议</h3>
-      <ul class="space-y-3">
-        ${data.improvement_tips.map((tip, i) => `
-          <li class="flex items-start gap-3">
-            <span class="w-6 h-6 rounded-full bg-fox text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">${i + 1}</span>
-            <span class="text-gray-600">${tip}</span>
-          </li>
-        `).join('')}
-      </ul>
-    </div>` : ''}
+    <!-- 评审报告卡片 -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <!-- 头部 -->
+        <div class="${isRecommended ? 'bg-gradient-to-r from-fox to-orange-400' : 'bg-gradient-to-r from-gray-600 to-gray-500'} p-6 text-white">
+            <div class="flex items-center gap-4">
+                <span class="text-5xl">${isRecommended ? '🏆' : '📝'}</span>
+                <div>
+                    <h2 class="text-2xl font-bold">${isRecommended ? '推荐成功！' : '暂未推荐'}</h2>
+                    <p class="text-white/80 text-sm mt-1">${isRecommended ? data.recommend_reason || '优质内容，值得推荐' : '继续加油，看看改进建议吧'}</p>
+                </div>
+                <div class="ml-auto text-center">
+                    <div class="text-4xl font-bold">${scores.overall.toFixed(1)}</div>
+                    <div class="text-sm text-white/70">综合评分</div>
+                </div>
+            </div>
+        </div>
 
-    <div class="text-center">
-      <button onclick="resetSubmit()" class="px-8 py-3 border-2 border-fox text-fox rounded-full font-bold hover:bg-fox-light transition">
-        再评一篇
-      </button>
-    </div>
-  `;
+        <!-- 刘看山点评 -->
+        <div class="p-6 border-b">
+            <div class="flex items-start gap-3">
+                <span class="text-3xl">🦊</span>
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-1">刘看山点评</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">${data.review_summary || '感谢你的创作！'}</p>
+                </div>
+            </div>
+        </div>
 
-      // 绘制雷达图
-      setTimeout(() => {
-        const ctx = document.getElementById('radar-chart');
-        if (ctx) {
-          new Chart(ctx, {
-            type: 'radar',
-            data: {
-              labels: ['内容深度', '原创性', '可读性', '专业度', '社区价值', '人类原创度'],
-              datasets: [{
-                label: '评分',
-                data: [scores.depth, scores.originality, scores.readability, scores.professionalism, scores.community, scores.ai_detection],
-                backgroundColor: 'rgba(255, 107, 53, 0.15)',
-                borderColor: '#FF6B35',
-                borderWidth: 2,
-                pointBackgroundColor: '#FF6B35',
-                pointRadius: 5,
-              }]
+        <!-- 各维度评分 -->
+        <div class="p-6 border-b">
+            <h3 class="font-bold text-gray-800 mb-4">📊 各维度评分</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${agentDetailsHtml}
+            </div>
+        </div>
+
+        <!-- 改进建议 -->
+        ${tipsHtml ? `
+        <div class="p-6">
+            <h3 class="font-bold text-gray-800 mb-3">📈 改进建议</h3>
+            <ol class="list-decimal list-inside space-y-2">
+                ${tipsHtml}
+            </ol>
+        </div>` : ''}
+    </div>`;
+
+    document.getElementById('result-content').innerHTML = html;
+    showPage('result');
+}
+
+// ──── 加载推荐榜 ────
+async function loadRecommendations() {
+    const category = document.getElementById('filter-category').value;
+    const sort = document.getElementById('filter-sort').value;
+    try {
+        const res = await fetch(`${API_BASE}/api/recommendations?limit=20&category=${category}&sort=${sort}`);
+        const data = await res.json();
+        const list = data.recommendations || [];
+
+        if (list.length === 0) {
+            document.getElementById('ranking-list').innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <span class="text-4xl">🦊</span>
+                    <p class="mt-2">暂无推荐内容，快来提交第一篇吧！</p>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+        list.forEach((rec, idx) => {
+            const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+            html += `
+            <div class="bg-white rounded-xl shadow-sm p-5 card-hover">
+                <div class="flex items-start gap-4">
+                    <div class="text-2xl font-bold text-gray-300 w-10 text-center flex-shrink-0">${medal}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="bg-fox-light text-fox text-xs px-2 py-0.5 rounded">${rec.category || '其他'}</span>
+                            <span class="text-xs text-gray-400">${rec.zhihu_name || '匿名'}</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 truncate">${rec.content_title || '无标题'}</h4>
+                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">${rec.content_summary || rec.recommend_reason || ''}</p>
+                        <div class="flex items-center gap-4 mt-3">
+                            <span class="text-xs text-gray-400">🎓 ${(rec.depth_score||0).toFixed(1)}</span>
+                            <span class="text-xs text-gray-400">💡 ${(rec.originality_score||0).toFixed(1)}</span>
+                            <span class="text-xs text-gray-400">📖 ${(rec.readability_score||0).toFixed(1)}</span>
+                            <span class="text-xs text-gray-400">🔍 ${(rec.ai_detection_score||0).toFixed(1)}</span>
+                        </div>
+                    </div>
+                    <div class="text-center flex-shrink-0">
+                        <div class="text-2xl font-bold ${rec.overall_score >= 8 ? 'text-green-600' : 'text-fox'}">${(rec.overall_score||0).toFixed(1)}</div>
+                        <div class="text-xs text-gray-400">综合分</div>
+                    </div>
+                </div>
+                ${rec.recommend_reason ? `<div class="mt-3 pt-3 border-t text-xs text-gray-500">🦊 ${rec.recommend_reason}</div>` : ''}
+            </div>`;
+        });
+        document.getElementById('ranking-list').innerHTML = html;
+    } catch(e) {
+        console.error(e);
+        showToast('加载推荐榜失败');
+    }
+}
+
+// ──── 加载个人中心 ────
+async function loadProfile() {
+    try {
+        const res = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`);
+        const userData = await res.json();
+        const user = userData.user;
+
+        document.getElementById('profile-name').textContent = user.zhihu_name || currentUser.zhihu_name;
+        document.getElementById('profile-zhihu-id').textContent = user.zhihu_id;
+        document.getElementById('profile-quota').textContent = userData.remaining_quota;
+        document.getElementById('profile-total').textContent = user.total_submissions;
+        document.getElementById('profile-recommended').textContent = user.total_recommended;
+        const rate = user.total_submissions > 0 ? Math.round(user.total_recommended / user.total_submissions * 100) : 0;
+        document.getElementById('profile-rate').textContent = rate + '%';
+
+        // 加载历史
+        const histRes = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}/submissions`);
+        const histData = await histRes.json();
+        const submissions = histData.submissions || [];
+
+        if (submissions.length === 0) {
+            document.getElementById('history-list').innerHTML = `
+                <div class="text-center py-8 text-gray-400"><p>暂无评审记录</p></div>`;
+            return;
+        }
+
+        let html = '';
+        submissions.forEach(s => {
+            const isRec = s.status === 'recommended';
+            html += `
+            <div class="bg-white rounded-lg shadow-sm p-4 card-hover cursor-pointer" onclick="viewSubmission(${s.id})">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="${isRec ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'} text-xs px-2 py-0.5 rounded">
+                                ${isRec ? '✅ 已推荐' : s.status === 'pending' ? '⏳ 评审中' : '📝 未推荐'}
+                            </span>
+                            <span class="text-xs text-gray-400">${s.created_at || ''}</span>
+                        </div>
+                        <h4 class="font-medium text-gray-800 mt-1 truncate">${s.content_title || '无标题'}</h4>
+                    </div>
+                    <div class="text-xl font-bold ${(s.overall_score||0) >= 7 ? 'text-green-600' : 'text-gray-400'} ml-4">
+                        ${(s.overall_score||0).toFixed(1)}
+                    </div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('history-list').innerHTML = html;
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// ──── 查看历史评审详情 ────
+async function viewSubmission(id) {
+    showLoading('正在加载评审报告');
+    try {
+        const res = await fetch(`${API_BASE}/api/submission/${id}`);
+        const data = await res.json();
+        hideLoading();
+        showResult({
+            status: data.status,
+            scores: {
+                overall: data.overall_score,
+                depth: data.depth_score,
+                originality: data.originality_score,
+                readability: data.readability_score,
+                professionalism: data.professionalism_score,
+                community: data.community_score,
+                ai_detection: data.ai_detection_score,
             },
-            options: {
-              scales: {
-                r: { min: 0, max: 10, ticks: { stepSize: 2, display: false }, grid: { color: '#e5e7eb' }, pointLabels: { font: { size: 13 } } }
-              },
-              plugins: { legend: { display: false } },
-            }
-          });
-        }
-      }, 100);
+            review_summary: data.review_summary,
+            improvement_tips: data.improvement_tips || [],
+            recommend_reason: '',
+            agent_reports: data.agent_reports || {},
+        });
+    } catch(e) {
+        hideLoading();
+        showToast('加载失败');
     }
+}
 
-    function resetSubmit() {
-      document.getElementById('review-result').classList.add('hidden');
-      document.getElementById('review-result').innerHTML = '';
-      document.getElementById('input-url').value = '';
-      document.getElementById('input-title').value = '';
-      document.getElementById('input-content').value = '';
-      window.scrollTo(0, 0);
-    }
-
-    // ---- 推荐榜 ----
-    async function loadRecommendations() {
-      const container = document.getElementById('board-list');
-      try {
-        const resp = await fetch(API_BASE + '/api/recommendations?limit=20');
-        if (!resp.ok) throw new Error('加载失败');
-        const data = await resp.json();
-        const recs = data.recommendations || [];
-        if (recs.length === 0) {
-          container.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-4">🦊</div><p>暂无推荐内容，快去提交你的作品吧！</p></div>';
-          return;
-        }
-        container.innerHTML = recs.map((r, i) => `
-      <div class="bg-white rounded-xl p-5 shadow-sm card-hover flex items-start gap-4">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 ${i < 3 ? 'gradient-bg' : 'bg-gray-300'}">
-          ${i + 1}
-        </div>
-        <div class="flex-1 min-w-0">
-          <h4 class="font-bold truncate">${r.content_title || '无标题'}</h4>
-          <p class="text-sm text-gray-500 mt-1 line-clamp-2">${r.recommend_reason || r.content_summary || ''}</p>
-          <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-            <span>📊 ${r.overall_score?.toFixed(1) || '-'} 分</span>
-            <span>📁 ${r.category || '其他'}</span>
-            <span>👤 ${r.zhihu_name || '匿名'}</span>
-          </div>
-        </div>
-        ${r.content_url && !r.content_url.startsWith('text://') ? `<a href="${r.content_url}" target="_blank" class="text-zhihu text-sm hover:underline flex-shrink-0">查看原文 →</a>` : ''}
-      </div>
-    `).join('');
-      } catch (e) {
-        container.innerHTML = '<div class="text-center py-12 text-gray-400"><p>加载失败，请稍后重试</p></div>';
-      }
-    }
-
-    // ---- 初始化 ----
-    showPage('home');
-  </script>
+// ──── 初始化 ────
+document.addEventListener('DOMContentLoaded', () => {
+    refreshQuota();
+});
+</script>
 
 </body>
-
 </html>

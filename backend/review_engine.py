@@ -2,8 +2,17 @@
 多 Agent 评审引擎
 5 个 Agent 独立评审 + 刘看山汇总
 """
+import os
 import json
 import asyncio
+
+# 清除代理环境变量，避免 SOCKS 代理导致请求失败
+for _proxy_var in [
+    "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",
+    "http_proxy", "https_proxy", "all_proxy",
+]:
+    os.environ.pop(_proxy_var, None)
+
 from openai import AsyncOpenAI
 from config import (
     OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL,
