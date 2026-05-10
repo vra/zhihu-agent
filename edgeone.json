@@ -1,17 +1,6 @@
 {
-  "$schema": "https://edgeone.ai/schemas/pages.json",
-  "name": "liukanshan-recommend",
-  "build": {
-    "output": "frontend"
-  },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://your-backend-server.com/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "buildCommand": "mkdir -p dist && cp frontend/index.html dist/index.html",
+  "outputDirectory": "dist",
+  "installCommand": "echo 'skip'",
+  "framework": "other"
 }

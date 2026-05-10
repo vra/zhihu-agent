@@ -1,0 +1,9 @@
+{
+  "name": "liukanshan-recommend",
+  "version": "1.0.0",
+  "description": "刘看山推荐 — AI 驱动的去中心化内容发现平台",
+  "scripts": {
+    "build": "echo 'No build needed - static site'"
+  },
+  "private": true
+}
