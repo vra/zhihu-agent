@@ -1,5 +1,5 @@
 {
-  "buildCommand": "mkdir -p dist && cp frontend/index.html dist/index.html",
+  "buildCommand": "mkdir -p dist/assets/liukanshan && cp frontend/index.html dist/index.html && cp liukanshan/*.png dist/assets/liukanshan/",
   "outputDirectory": "dist",
   "installCommand": "echo 'skip'",
   "framework": "other"
