@@ -1,629 +1,651 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦊 刘看山推荐 - AI 驱动的内容发现平台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        zhihu: '#0066FF',
-                        'zhihu-dark': '#0052CC',
-                        fox: '#FF6B35',
-                        'fox-light': '#FFF3ED',
-                        'fox-dark': '#E55A2B',
-                    }
-                }
-            }
-        }
-    </script>
+    <title>刘看山推荐 — 让优质内容被看见</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
-        body { font-family: 'Noto Sans SC', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #FF6B35 0%, #FF8F65 50%, #0066FF 100%); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
-        .score-bar { transition: width 1s ease-out; }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse-fox { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        .pulse-fox { animation: pulse-fox 2s infinite; }
-        .loading-dots::after {
-            content: '';
-            animation: dots 1.5s steps(4, end) infinite;
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+        :root {
+            --ink: #1a1a1a; --ink-2: #3d3d3d; --ink-3: #666; --ink-4: #999; --ink-5: #bbb;
+            --surface: #fafafa; --card: #fff; --border: #eee; --border-2: #e0e0e0;
+            --accent: #2B6CB0; --accent-light: #EBF4FF; --accent-dark: #1E4E8C;
+            --green: #2F855A; --green-light: #F0FFF4;
+            --amber: #B7791F; --amber-light: #FFFFF0;
+            --red: #C53030; --red-light: #FFF5F5;
+            --radius: 10px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes dots {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--surface); color: var(--ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+        /* ── Nav ── */
+        .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+        .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; color: var(--ink); }
+        .nav-logo { width: 32px; height: 32px; object-fit: contain; }
+        .nav-title { font-size: 16px; font-weight: 600; }
+        .nav-links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+        .nav-link { padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--ink-3); background: none; border: none; border-radius: 6px; cursor: pointer; transition: var(--transition); }
+        .nav-link:hover { color: var(--ink); background: var(--surface); }
+        .nav-link.active { color: var(--accent); background: var(--accent-light); }
+        .nav-quota { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-light); padding: 4px 12px; border-radius: 20px; margin-left: 8px; }
+
+        /* ── Layout ── */
+        .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; min-height: calc(100vh - 56px - 160px); }
+
+        /* ── Hero ── */
+        .hero { padding: 56px 0 40px; text-align: center; }
+        .hero-mascot { width: 72px; height: 72px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08)); }
+        .hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+        .hero p { font-size: 15px; color: var(--ink-3); max-width: 520px; margin: 0 auto; }
+
+        /* ── Card ── */
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; transition: var(--transition); }
+        .card:hover { box-shadow: var(--shadow); }
+        .card-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 16px; }
+
+        /* ── Tabs ── */
+        .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .tab-btn { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--ink-4); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: var(--transition); }
+        .tab-btn:hover { color: var(--ink-2); }
+        .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
+
+        /* ── Form ── */
+        .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-3); margin-bottom: 6px; }
+        .form-input, .form-textarea { width: 100%; padding: 10px 14px; font-size: 14px; font-family: inherit; border: 1px solid var(--border-2); border-radius: 8px; background: var(--card); color: var(--ink); transition: var(--transition); }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+        .form-input::placeholder, .form-textarea::placeholder { color: var(--ink-5); }
+        .form-textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
+        .form-hint { font-size: 12px; color: var(--ink-4); margin-top: 6px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-group { margin-bottom: 14px; }
+
+        /* ── Button ── */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 24px; font-size: 14px; font-weight: 600; font-family: inherit; border: none; border-radius: 8px; cursor: pointer; transition: var(--transition); }
+        .btn-primary { background: var(--ink); color: #fff; }
+        .btn-primary:hover { background: var(--ink-2); }
+        .btn-primary:disabled { background: var(--ink-5); cursor: not-allowed; }
+        .btn-ghost { background: none; color: var(--ink-3); padding: 6px 12px; }
+        .btn-ghost:hover { color: var(--ink); background: var(--surface); }
+
+        /* ── Features Grid ── */
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; transition: var(--transition); }
+        .feature-card:hover { box-shadow: var(--shadow); border-color: var(--border-2); }
+        .feature-icon { font-size: 32px; margin-bottom: 12px; }
+        .feature-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        .feature-desc { font-size: 12px; color: var(--ink-4); line-height: 1.6; }
+
+        /* ── Steps ── */
+        .steps { display: flex; gap: 0; margin: 24px 0; }
+        .step { flex: 1; text-align: center; position: relative; }
+        .step::after { content: '→'; position: absolute; right: -8px; top: 16px; color: var(--ink-5); font-size: 18px; }
+        .step:last-child::after { display: none; }
+        .step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 14px; font-weight: 700; }
+        .step-title { font-size: 13px; font-weight: 600; }
+        .step-desc { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
+
+        /* ── Agents Grid ── */
+        .agents-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .agent-card { padding: 16px; border: 1px solid var(--border); border-radius: 8px; text-align: center; transition: var(--transition); }
+        .agent-card:hover { border-color: var(--border-2); background: var(--surface); }
+        .agent-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 16px; }
+        .agent-name { font-size: 13px; font-weight: 600; }
+        .agent-desc { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
+
+        /* ── Loading ── */
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); z-index: 200; justify-content: center; align-items: center; }
+        .overlay.show { display: flex; }
+        .loading-box { text-align: center; padding: 40px; }
+        .loading-orbit { position: relative; width: 140px; height: 140px; margin: 0 auto 20px; animation: orbitSpin 4s linear infinite; }
+        @keyframes orbitSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .loading-orbit .orbit-item { position: absolute; width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1)); animation: orbitCounterSpin 4s linear infinite; }
+        @keyframes orbitCounterSpin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        .loading-orbit .orbit-item:nth-child(1) { top: 0; left: 50%; margin-left: -20px; }
+        .loading-orbit .orbit-item:nth-child(2) { top: 50%; right: 0; margin-top: -20px; }
+        .loading-orbit .orbit-item:nth-child(3) { bottom: 0; left: 50%; margin-left: -20px; }
+        .loading-orbit .orbit-item:nth-child(4) { top: 50%; left: 0; margin-top: -20px; }
+        .loading-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .loading-desc { font-size: 13px; color: var(--ink-4); }
+        .loading-dots { display: inline-flex; gap: 4px; margin-top: 16px; }
+        .loading-dot { width: 6px; height: 6px; background: var(--ink-5); border-radius: 50%; animation: pulse 1.2s ease-in-out infinite; }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
+
+        /* ── Result ── */
+        .result-header { padding: 28px; border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; gap: 20px; }
+        .result-header.recommended { background: var(--green-light); border: 1px solid #C6F6D5; border-bottom: none; }
+        .result-header.rejected { background: var(--surface); border: 1px solid var(--border); border-bottom: none; }
+        .result-header.needs_improvement { background: var(--amber-light); border: 1px solid #FEFCBF; border-bottom: none; }
+        .result-score-ring { width: 72px; height: 72px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+        .result-score-ring.high { background: var(--green); color: #fff; }
+        .result-score-ring.mid { background: var(--amber); color: #fff; }
+        .result-score-ring.low { background: var(--red); color: #fff; }
+        .result-score-num { font-size: 24px; font-weight: 700; line-height: 1; }
+        .result-score-label { font-size: 10px; opacity: 0.8; }
+        .result-status { font-size: 20px; font-weight: 700; }
+        .result-reason { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+        .result-body { background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); padding: 24px; }
+        .result-section { margin-bottom: 24px; }
+        .result-section:last-child { margin-bottom: 0; }
+        .result-section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .score-row { padding: 12px; background: var(--surface); border-radius: 8px; }
+        .score-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .score-row-name { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+        .score-row-value { font-size: 16px; font-weight: 700; }
+        .score-row-value.high { color: var(--green); } .score-row-value.mid { color: var(--amber); } .score-row-value.low { color: var(--red); }
+        .score-bar-bg { width: 100%; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease-out; }
+        .score-bar-fill.high { background: var(--green); } .score-bar-fill.mid { background: var(--amber); } .score-bar-fill.low { background: var(--red); }
+        .score-comment { font-size: 12px; color: var(--ink-4); margin-top: 6px; line-height: 1.5; }
+        .review-text { font-size: 14px; color: var(--ink-2); line-height: 1.8; white-space: pre-wrap; }
+        .tips-list { list-style: none; }
+        .tips-item { padding: 10px 0; font-size: 13px; color: var(--ink-2); border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+        .tips-item:last-child { border-bottom: none; }
+        .tips-num { width: 20px; height: 20px; background: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--ink-4); flex-shrink: 0; }
+
+        /* ── Ranking ── */
+        .ranking-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; }
+        .ranking-title { font-size: 20px; font-weight: 700; }
+        .ranking-subtitle { font-size: 13px; color: var(--ink-4); margin-top: 2px; }
+        .ranking-filters { display: flex; gap: 8px; }
+        .filter-select { font-size: 13px; font-family: inherit; padding: 6px 12px; border: 1px solid var(--border-2); border-radius: 6px; background: var(--card); color: var(--ink-2); cursor: pointer; }
+        .rec-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; transition: var(--transition); }
+        .rec-card:hover { box-shadow: var(--shadow); border-color: var(--border-2); }
+        .rec-top { display: flex; align-items: flex-start; gap: 16px; }
+        .rec-rank { font-size: 14px; font-weight: 700; color: var(--ink-5); width: 28px; text-align: center; flex-shrink: 0; padding-top: 2px; }
+        .rec-rank.gold { color: #D69E2E; } .rec-rank.silver { color: #A0AEC0; } .rec-rank.bronze { color: #C77B3C; }
+        .rec-body { flex: 1; min-width: 0; }
+        .rec-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .rec-tag { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: var(--accent-light); color: var(--accent); }
+        .rec-author { font-size: 12px; color: var(--ink-4); }
+        .rec-title-text { font-size: 15px; font-weight: 600; }
+        .rec-reason-text { font-size: 12px; color: var(--ink-4); margin-top: 6px; line-height: 1.5; }
+        .rec-score-box { text-align: center; flex-shrink: 0; padding-left: 16px; }
+        .rec-score-num { font-size: 22px; font-weight: 700; }
+        .rec-score-num.high { color: var(--green); } .rec-score-num.mid { color: var(--amber); }
+        .rec-score-label { font-size: 11px; color: var(--ink-4); }
+
+        /* ── Profile ── */
+        .profile-header { display: flex; align-items: center; gap: 16px; }
+        .profile-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: contain; background: var(--surface); padding: 8px; }
+        .profile-name { font-size: 18px; font-weight: 600; }
+        .profile-id { font-size: 12px; color: var(--ink-4); }
+        .profile-quota-box { margin-left: auto; text-align: center; }
+        .profile-quota-num { font-size: 28px; font-weight: 700; color: var(--accent); }
+        .profile-quota-label { font-size: 11px; color: var(--ink-4); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 22px; font-weight: 700; }
+        .stat-label { font-size: 12px; color: var(--ink-4); }
+        .history-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: var(--transition); }
+        .history-card:hover { border-color: var(--border-2); background: var(--surface); }
+        .history-badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; }
+        .history-badge.rec { background: var(--green-light); color: var(--green); }
+        .history-badge.pending { background: var(--amber-light); color: var(--amber); }
+        .history-badge.rej { background: var(--surface); color: var(--ink-4); }
+        .history-title { font-size: 14px; font-weight: 500; margin-top: 4px; }
+        .history-time { font-size: 11px; color: var(--ink-5); margin-left: 8px; }
+        .history-score { font-size: 18px; font-weight: 700; }
+
+        /* ── Rules Page ── */
+        .rules-hero { text-align: center; padding: 40px 0 32px; }
+        .rules-hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .rules-hero p { font-size: 14px; color: var(--ink-3); max-width: 560px; margin: 0 auto; }
+        .rule-section { margin-bottom: 28px; }
+        .rule-section h2 { font-size: 17px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--ink); display: inline-block; }
+        .rule-section h3 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: var(--ink-2); }
+        .rule-section p, .rule-section li { font-size: 14px; color: var(--ink-2); line-height: 1.8; }
+        .rule-section ul, .rule-section ol { padding-left: 20px; margin: 8px 0; }
+        .rule-section li { margin-bottom: 4px; }
+        .score-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+        .score-table th, .score-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        .score-table th { background: var(--surface); font-weight: 600; color: var(--ink); }
+        .score-table td { color: var(--ink-2); }
+        .score-table tr:hover td { background: var(--surface); }
+        .highlight-box { background: var(--accent-light); border: 1px solid #BEE3F8; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+        .highlight-box p { color: var(--accent-dark); font-size: 13px; margin: 0; }
+        .highlight-box strong { color: var(--accent); }
+
+        /* ── Footer ── */
+        .footer { background: var(--ink); color: rgba(255,255,255,0.7); padding: 40px 24px; margin-top: 0; }
+        .footer-inner { max-width: 960px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; flex-wrap: wrap; }
+        .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .footer-brand img { width: 28px; height: 28px; object-fit: contain; filter: brightness(10); }
+        .footer-brand span { font-size: 15px; font-weight: 600; color: #fff; }
+        .footer-desc { font-size: 12px; line-height: 1.7; max-width: 320px; }
+        .footer-links { display: flex; gap: 40px; }
+        .footer-col h4 { font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer-col a { display: block; font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; padding: 3px 0; transition: var(--transition); }
+        .footer-col a:hover { color: #fff; }
+        .footer-bottom { max-width: 960px; margin: 24px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; }
+
+        /* ── Empty ── */
+        .empty { text-align: center; padding: 48px 24px; color: var(--ink-4); }
+        .empty-icon { font-size: 36px; margin-bottom: 8px; opacity: 0.4; }
+        .empty-icon img { width: 48px; height: 48px; object-fit: contain; opacity: 0.3; }
+
+        /* ── Toast ── */
+        .toast { position: fixed; top: 72px; left: 50%; transform: translateX(-50%) translateY(-12px); background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 300; opacity: 0; transition: all 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.35s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        @media (max-width: 640px) {
+            .nav-inner { padding: 0 16px; } .container { padding: 20px 16px; }
+            .hero h1 { font-size: 22px; } .form-row { flex-direction: column; }
+            .ranking-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .features-grid { grid-template-columns: 1fr; } .agents-grid { grid-template-columns: repeat(2, 1fr); }
+            .steps { flex-direction: column; gap: 16px; } .step::after { display: none; }
+            .footer-inner { flex-direction: column; } .footer-links { flex-direction: column; gap: 24px; }
+            .score-grid { grid-template-columns: 1fr; }
         }
-        .radar-chart { position: relative; width: 200px; height: 200px; }
-        .tab-active { border-bottom: 3px solid #FF6B35; color: #FF6B35; font-weight: 700; }
-        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body>
 
-<!-- ========== 导航栏 ========== -->
-<nav class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3 cursor-pointer" onclick="showPage('home')">
-            <span class="text-3xl">🦊</span>
-            <div>
-                <h1 class="text-xl font-bold text-gray-800">刘看山推荐</h1>
-                <p class="text-xs text-gray-400">AI 驱动的内容发现平台</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-6">
-            <button onclick="showPage('home')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">申请推荐</button>
-            <button onclick="showPage('ranking')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">推荐榜</button>
-            <button onclick="showPage('profile')" class="nav-btn text-sm font-medium text-gray-600 hover:text-fox transition">个人中心</button>
-            <div id="quota-badge" class="bg-fox-light text-fox text-xs font-bold px-3 py-1 rounded-full">
-                额度: <span id="quota-count">3</span>/3
-            </div>
+<!-- ═══ Navigation ═══ -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a class="nav-brand" onclick="showPage('home')">
+            <img src="/assets/liukanshan/liukanshan-logo.png" alt="刘看山" class="nav-logo">
+            <span class="nav-title">刘看山推荐</span>
+        </a>
+        <div class="nav-links">
+            <button onclick="showPage('home')" class="nav-link active" data-page="home">申请推荐</button>
+            <button onclick="showPage('ranking')" class="nav-link" data-page="ranking">推荐榜</button>
+            <button onclick="showPage('rules')" class="nav-link" data-page="rules">规则说明</button>
+            <button onclick="showPage('profile')" class="nav-link" data-page="profile">我的</button>
+            <span class="nav-quota">剩余 <span id="quota-count">100</span> 次</span>
         </div>
     </div>
 </nav>
 
-<!-- ========== 主内容区 ========== -->
-<main class="max-w-6xl mx-auto px-4 py-6">
+<!-- ═══ Main Content ═══ -->
+<div class="container">
 
-    <!-- ===== 首页：提交评审 ===== -->
+    <!-- ══ Home ══ -->
     <div id="page-home" class="page fade-in">
-        <!-- Hero -->
-        <div class="gradient-bg rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
-            <div class="relative z-10">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="text-5xl pulse-fox">🦊</span>
-                    <div>
-                        <h2 class="text-3xl font-bold">让优质内容被看见</h2>
-                        <p class="text-white/80 mt-1">每一个认真创作的人，都不该被埋没</p>
-                    </div>
-                </div>
-                <p class="text-white/70 text-sm max-w-xl">
-                    提交你的知乎内容，5 位 AI 评审官将从内容深度、原创性、可读性、专业度、社区价值和人类原创度 6 个维度进行独立评审。
-                    综合评分 ≥ 7.0 即可进入「刘看山推荐榜」！
-                </p>
-            </div>
-            <div class="absolute right-8 top-1/2 -translate-y-1/2 text-9xl opacity-10">🦊</div>
+        <div class="hero">
+            <img src="/assets/liukanshan/liukanshan-logo.png" alt="刘看山" class="hero-mascot">
+            <h1>让优质内容被看见</h1>
+            <p>知乎有大量优质创作者因粉丝数不足而被埋没。刘看山推荐通过 AI 多维度评审，让真正有深度的内容脱颖而出——不看粉丝数，只看内容质量。</p>
         </div>
 
-        <!-- 提交方式切换 -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div class="flex gap-4 mb-6 border-b">
-                <button id="tab-url" onclick="switchTab('url')" class="pb-3 px-2 text-sm font-medium tab-active">🔗 提交知乎链接</button>
-                <button id="tab-text" onclick="switchTab('text')" class="pb-3 px-2 text-sm font-medium text-gray-400 hover:text-gray-600">📝 直接提交文本</button>
+        <!-- Features -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"></div>
+                <div class="feature-title">内容为王</div>
+                <div class="feature-desc">不看粉丝数、不看点赞量，纯粹从内容深度、原创性、专业度等维度评判</div>
             </div>
+            <div class="feature-card">
+                <div class="feature-icon"></div>
+                <div class="feature-title">多 Agent 评审</div>
+                <div class="feature-desc">6 位刘看山 AI 评审员从不同角度独立打分，综合得出最终评分，避免单一偏见</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"></div>
+                <div class="feature-title">AI 内容鉴别</div>
+                <div class="feature-desc">内置 AI 生成内容检测，鼓励人类原创表达，让真正用心写的内容获得应有的关注</div>
+            </div>
+        </div>
 
-            <!-- URL 提交 -->
+        <!-- How it works -->
+        <div class="card">
+            <div class="card-title">评审流程</div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-title">提交内容</div>
+                    <div class="step-desc">粘贴知乎链接或文本</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-title">AI 评审</div>
+                    <div class="step-desc">6 位刘看山独立打分</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-title">综合评分</div>
+                    <div class="step-desc">加权计算最终得分</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-title">推荐上榜</div>
+                    <div class="step-desc">≥7.0 分进入推荐榜</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Form -->
+        <div class="card">
+            <div class="tab-bar">
+                <button id="tab-url" onclick="switchTab('url')" class="tab-btn active">链接提交</button>
+                <button id="tab-text" onclick="switchTab('text')" class="tab-btn">文本提交</button>
+            </div>
             <div id="form-url">
-                <label class="block text-sm font-medium text-gray-700 mb-2">知乎内容链接</label>
-                <div class="flex gap-3">
-                    <input id="input-url" type="url" placeholder="粘贴知乎回答/文章/想法链接..."
-                           class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm">
-                    <button onclick="submitUrl()" id="btn-submit-url"
-                            class="bg-fox hover:bg-fox-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2 whitespace-nowrap">
-                        🦊 申请推荐
-                    </button>
+                <label class="form-label">知乎内容链接</label>
+                <div class="form-row">
+                    <input id="input-url" type="url" placeholder="粘贴知乎回答、文章或想法的链接" class="form-input" style="flex:1">
+                    <button onclick="submitUrl()" class="btn btn-primary" style="white-space:nowrap">提交评审</button>
                 </div>
-                <p class="text-xs text-gray-400 mt-2">支持知乎回答、文章、想法链接。每次提交消耗 1 次额度。</p>
+                <p class="form-hint">支持知乎回答、文章、想法链接，每次提交消耗 1 次额度</p>
             </div>
-
-            <!-- 文本提交 -->
             <div id="form-text" class="hidden">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">内容标题</label>
-                    <input id="input-title" type="text" placeholder="输入内容标题..."
-                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm">
+                <div class="form-group">
+                    <label class="form-label">标题</label>
+                    <input id="input-title" type="text" placeholder="输入内容标题" class="form-input">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">内容正文</label>
-                    <textarea id="input-content" rows="8" placeholder="粘贴或输入你的内容..."
-                              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-fox focus:border-fox outline-none transition text-sm resize-y"></textarea>
+                <div class="form-group">
+                    <label class="form-label">正文</label>
+                    <textarea id="input-content" placeholder="粘贴或输入你的内容（至少 50 字）" class="form-textarea"></textarea>
                 </div>
-                <button onclick="submitText()" id="btn-submit-text"
-                        class="bg-fox hover:bg-fox-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2">
-                    🦊 申请推荐
-                </button>
-                <p class="text-xs text-gray-400 mt-2">直接提交文本进行评审（Demo 模式）。每次提交消耗 1 次额度。</p>
+                <button onclick="submitText()" class="btn btn-primary">提交评审</button>
+                <p class="form-hint">直接提交文本进行评审（Demo 模式），每次提交消耗 1 次额度</p>
             </div>
         </div>
 
-        <!-- 评审团介绍 -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">🦊 刘看山评审团</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="bg-blue-50 rounded-lg p-4 text-center card-hover">
-                    <div class="text-3xl mb-2">🎓</div>
-                    <h4 class="font-bold text-sm text-gray-800">学术山</h4>
-                    <p class="text-xs text-gray-500 mt-1">内容深度 · 逻辑论证</p>
-                </div>
-                <div class="bg-green-50 rounded-lg p-4 text-center card-hover">
-                    <div class="text-3xl mb-2">📖</div>
-                    <h4 class="font-bold text-sm text-gray-800">阅读山</h4>
-                    <p class="text-xs text-gray-500 mt-1">可读性 · 阅读体验</p>
-                </div>
-                <div class="bg-yellow-50 rounded-lg p-4 text-center card-hover">
-                    <div class="text-3xl mb-2">💡</div>
-                    <h4 class="font-bold text-sm text-gray-800">创意山</h4>
-                    <p class="text-xs text-gray-500 mt-1">原创性 · 独特观点</p>
-                </div>
-                <div class="bg-purple-50 rounded-lg p-4 text-center card-hover">
-                    <div class="text-3xl mb-2">🤝</div>
-                    <h4 class="font-bold text-sm text-gray-800">社区山</h4>
-                    <p class="text-xs text-gray-500 mt-1">社区价值 · 讨论潜力</p>
-                </div>
-                <div class="bg-red-50 rounded-lg p-4 text-center card-hover">
-                    <div class="text-3xl mb-2">🔍</div>
-                    <h4 class="font-bold text-sm text-gray-800">鉴真山</h4>
-                    <p class="text-xs text-gray-500 mt-1">AI检测 · 人类原创度</p>
-                </div>
-                <div class="bg-orange-50 rounded-lg p-4 text-center card-hover">
-                    <div class="text-3xl mb-2">🎯</div>
-                    <h4 class="font-bold text-sm text-gray-800">专业度</h4>
-                    <p class="text-xs text-gray-500 mt-1">引用准确 · 术语规范</p>
-                </div>
+        <!-- Agents -->
+        <div class="card">
+            <div class="card-title">刘看山评审团</div>
+            <div class="agents-grid">
+                <div class="agent-card"><div class="agent-avatar"><img src="/assets/liukanshan/liukanshan-logo.png" alt="" style="width:24px;height:24px;object-fit:contain"></div><div class="agent-name">学术刘看山</div><div class="agent-desc">内容深度 · 逻辑论证</div></div>
+                <div class="agent-card"><div class="agent-avatar"><img src="/assets/liukanshan/liukanshan-logo.png" alt="" style="width:24px;height:24px;object-fit:contain"></div><div class="agent-name">阅读刘看山</div><div class="agent-desc">可读性 · 阅读体验</div></div>
+                <div class="agent-card"><div class="agent-avatar"><img src="/assets/liukanshan/liukanshan-logo.png" alt="" style="width:24px;height:24px;object-fit:contain"></div><div class="agent-name">创意刘看山</div><div class="agent-desc">原创性 · 独特观点</div></div>
+                <div class="agent-card"><div class="agent-avatar"><img src="/assets/liukanshan/liukanshan-logo.png" alt="" style="width:24px;height:24px;object-fit:contain"></div><div class="agent-name">社区刘看山</div><div class="agent-desc">社区价值 · 讨论潜力</div></div>
+                <div class="agent-card"><div class="agent-avatar"><img src="/assets/liukanshan/liukanshan-logo.png" alt="" style="width:24px;height:24px;object-fit:contain"></div><div class="agent-name">鉴真刘看山</div><div class="agent-desc">AI 检测 · 人类原创</div></div>
+                <div class="agent-card"><div class="agent-avatar"><img src="/assets/liukanshan/liukanshan-logo.png" alt="" style="width:24px;height:24px;object-fit:contain"></div><div class="agent-name">专业刘看山</div><div class="agent-desc">引用准确 · 术语规范</div></div>
             </div>
         </div>
     </div>
 
-    <!-- ===== 评审结果页 ===== -->
-    <div id="page-result" class="page hidden fade-in">
-        <div id="result-content"></div>
-    </div>
+    <!-- ══ Result ══ -->
+    <div id="page-result" class="page hidden fade-in"><div id="result-content"></div></div>
 
-    <!-- ===== 推荐榜页 ===== -->
+    <!-- ══ Ranking ══ -->
     <div id="page-ranking" class="page hidden fade-in">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">🏆 刘看山推荐榜</h2>
-                <p class="text-sm text-gray-500 mt-1">通过 AI 评审的优质内容，值得你花时间阅读</p>
-            </div>
-            <div class="flex gap-2">
-                <select id="filter-category" onchange="loadRecommendations()"
-                        class="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-fox">
-                    <option value="">全部分类</option>
-                    <option value="科技">科技</option>
-                    <option value="人文">人文</option>
-                    <option value="生活">生活</option>
-                    <option value="职场">职场</option>
-                    <option value="教育">教育</option>
-                    <option value="财经">财经</option>
-                    <option value="健康">健康</option>
-                    <option value="娱乐">娱乐</option>
+        <div class="ranking-header">
+            <div><div class="ranking-title"> 推荐榜</div><div class="ranking-subtitle">通过 AI 评审的优质内容，值得你花时间阅读</div></div>
+            <div class="ranking-filters">
+                <select id="filter-category" onchange="loadRecommendations()" class="filter-select">
+                    <option value="">全部分类</option><option value="科技">科技</option><option value="人文">人文</option><option value="生活">生活</option><option value="职场">职场</option><option value="教育">教育</option><option value="财经">财经</option><option value="健康">健康</option><option value="娱乐">娱乐</option>
                 </select>
-                <select id="filter-sort" onchange="loadRecommendations()"
-                        class="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-fox">
-                    <option value="created_at">最新推荐</option>
-                    <option value="score">最高评分</option>
+                <select id="filter-sort" onchange="loadRecommendations()" class="filter-select">
+                    <option value="created_at">最新</option><option value="score">最高分</option>
                 </select>
             </div>
         </div>
-        <div id="ranking-list" class="space-y-4">
-            <div class="text-center py-12 text-gray-400">
-                <span class="text-4xl">🦊</span>
-                <p class="mt-2">暂无推荐内容，快来提交第一篇吧！</p>
+        <div id="ranking-list"></div>
+    </div>
+
+    <!-- ══ Rules ══ -->
+    <div id="page-rules" class="page hidden fade-in">
+        <div class="rules-hero">
+            <h1> 规则说明</h1>
+            <p>了解刘看山推荐的评审机制、打分规则和项目愿景</p>
+        </div>
+
+        <div class="card">
+            <div class="rule-section">
+                <h2> 项目愿景</h2>
+                <p>知乎社区中，大量优质内容因创作者粉丝数不足而难以获得足够的曝光。传统推荐算法往往倾向于推荐已有高互动量的内容，形成「马太效应」——强者愈强，新人难以出头。</p>
+                <p style="margin-top:8px"><strong>「刘看山推荐」</strong>旨在打破这一困境。我们通过多 Agent AI 评审系统，从内容本身的质量出发，不看粉丝数、不看历史数据，纯粹评估内容的深度、原创性、可读性等维度，让真正优质的内容被看见。</p>
+                <div class="highlight-box">
+                    <p> <strong>核心理念：</strong>内容为王。一篇 0 粉丝作者写的深度技术文章，和一篇百万粉丝大V的随笔，在刘看山面前享有完全平等的评审机会。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="rule-section">
+                <h2> 评分维度</h2>
+                <p>每篇内容由 6 位 AI 评审员（刘看山分身）从不同维度独立评分，最终加权计算综合得分：</p>
+                <table class="score-table">
+                    <thead><tr><th>维度</th><th>评审员</th><th>权重</th><th>评估要点</th></tr></thead>
+                    <tbody>
+                        <tr><td>内容深度</td><td>学术刘看山</td><td>20%</td><td>论证是否充分、分析是否深入、是否有独到见解</td></tr>
+                        <tr><td>原创性</td><td>创意刘看山</td><td>20%</td><td>观点是否新颖、是否有独特视角、非简单搬运</td></tr>
+                        <tr><td>可读性</td><td>阅读刘看山</td><td>15%</td><td>结构是否清晰、语言是否流畅、排版是否友好</td></tr>
+                        <tr><td>专业度</td><td>专业刘看山</td><td>15%</td><td>术语使用是否准确、引用是否可靠、数据是否真实</td></tr>
+                        <tr><td>社区价值</td><td>社区刘看山</td><td>15%</td><td>是否能引发有价值的讨论、对社区是否有贡献</td></tr>
+                        <tr><td>人类原创</td><td>鉴真刘看山</td><td>15%</td><td>是否为人类原创内容、AI 生成内容检测</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="rule-section">
+                <h2> 推荐规则</h2>
+                <ul>
+                    <li><strong>推荐成功：</strong>综合评分 ≥ 7.0 分，内容将进入推荐榜，获得更多曝光机会</li>
+                    <li><strong>有待提升：</strong>综合评分 5.0 ~ 6.9 分，系统会给出具体的改进建议</li>
+                    <li><strong>暂未推荐：</strong>综合评分 < 5.0 分，建议重新打磨内容后再次提交</li>
+                </ul>
+                <h3>额度机制</h3>
+                <ul>
+                    <li>每位用户每周初始额度为 <strong>100 次</strong></li>
+                    <li>每次提交评审消耗 1 次额度</li>
+                    <li>推荐成功可获得 2 次额外额度奖励</li>
+                    <li>高分（≥ 9.0）可获得 3 次额外额度奖励</li>
+                </ul>
+                <h3>内容要求</h3>
+                <ul>
+                    <li>支持知乎回答、文章、想法等内容类型</li>
+                    <li>禁止提交违规、抄袭、纯 AI 生成的内容</li>
+                    <li>同一内容不可重复提交</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="rule-section">
+                <h2> 技术架构</h2>
+                <p>本项目是参加<strong>「知乎 Hackathon | AI 脑洞实验室」</strong>的参赛作品，属于<strong>「引力场」</strong>赛道——聚焦社区内容分发与社交互动。</p>
+                <ul>
+                    <li><strong>后端：</strong>Python FastAPI + SQLite，调用知乎 API 获取内容</li>
+                    <li><strong>AI 评审：</strong>多 Agent 架构，6 个独立 AI 评审员并行评分</li>
+                    <li><strong>前端：</strong>纯静态 HTML/CSS/JS，无框架依赖，轻量高效</li>
+                    <li><strong>IP 融合：</strong>以知乎吉祥物「刘看山」为核心 IP，打造评审团形象</li>
+                </ul>
+                <div class="highlight-box">
+                    <p> <strong>为什么叫「刘看山推荐」？</strong>刘看山是知乎的官方吉祥物，我们让它化身为 6 位不同性格的 AI 评审员，组成「刘看山评审团」，用可爱又专业的方式为优质内容把关。</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== 个人中心页 ===== -->
+    <!-- ══ Profile ══ -->
     <div id="page-profile" class="page hidden fade-in">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-fox-light rounded-full flex items-center justify-center text-3xl">🦊</div>
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800" id="profile-name">演示用户</h2>
-                    <p class="text-sm text-gray-500">知乎 ID: <span id="profile-zhihu-id">demo_user</span></p>
-                </div>
-                <div class="ml-auto text-right">
-                    <div class="text-3xl font-bold text-fox" id="profile-quota">3</div>
-                    <p class="text-xs text-gray-500">本周剩余额度</p>
-                </div>
+        <div class="card">
+            <div class="profile-header">
+                <img src="/assets/liukanshan/liukanshan-logo.png" alt="刘看山" class="profile-avatar">
+                <div><div class="profile-name" id="profile-name">演示用户</div><div class="profile-id">ID: <span id="profile-zhihu-id">demo_user</span></div></div>
+                <div class="profile-quota-box"><div class="profile-quota-num" id="profile-quota">100</div><div class="profile-quota-label">本周剩余额度</div></div>
             </div>
-            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-800" id="profile-total">0</div>
-                    <p class="text-xs text-gray-500">总提交数</p>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-green-600" id="profile-recommended">0</div>
-                    <p class="text-xs text-gray-500">推荐成功</p>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-fox" id="profile-rate">0%</div>
-                    <p class="text-xs text-gray-500">推荐率</p>
-                </div>
+            <div class="stats-grid">
+                <div class="stat-item"><div class="stat-num" id="profile-total">0</div><div class="stat-label">总提交</div></div>
+                <div class="stat-item"><div class="stat-num" id="profile-recommended" style="color:var(--green)">0</div><div class="stat-label">推荐成功</div></div>
+                <div class="stat-item"><div class="stat-num" id="profile-rate" style="color:var(--accent)">0%</div><div class="stat-label">推荐率</div></div>
             </div>
         </div>
-
-        <h3 class="text-lg font-bold text-gray-800 mb-4">📋 评审历史</h3>
-        <div id="history-list" class="space-y-3">
-            <div class="text-center py-8 text-gray-400">
-                <p>暂无评审记录</p>
-            </div>
-        </div>
-    </div>
-
-</main>
-
-<!-- ========== Loading 遮罩 ========== -->
-<div id="loading-overlay" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center">
-    <div class="bg-white rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4">
-        <div class="text-6xl mb-4 pulse-fox">🦊</div>
-        <h3 class="text-lg font-bold text-gray-800 mb-2">刘看山正在召集评审团</h3>
-        <p class="text-sm text-gray-500" id="loading-text">5 位评审官正在认真阅读你的内容<span class="loading-dots"></span></p>
-        <div class="mt-4 flex justify-center gap-2">
-            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0s"></span>
-            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0.2s"></span>
-            <span class="inline-block w-2 h-2 bg-fox rounded-full animate-bounce" style="animation-delay:0.4s"></span>
-        </div>
+        <div class="card-title" style="margin: 24px 0 12px;">评审历史</div>
+        <div id="history-list"><div class="empty"><p>暂无评审记录</p></div></div>
     </div>
 </div>
 
-<!-- ========== Toast 提示 ========== -->
-<div id="toast" class="hidden fixed top-20 right-4 z-50 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg text-sm max-w-xs"></div>
+<!-- ═══ Footer ═══ -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div>
+            <div class="footer-brand">
+                <img src="/assets/liukanshan/liukanshan-logo.png" alt="刘看山">
+                <span>刘看山推荐</span>
+            </div>
+            <div class="footer-desc">让优质内容被看见。不看粉丝数，只看内容质量。<br>通过多 Agent AI 评审，发现被埋没的好内容。</div>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>项目</h4>
+                <a href="https://github.com/vra/zhihu-agent" target="_blank">GitHub 源码</a>
+                <a href="#" onclick="showPage('rules');return false;">评审规则</a>
+                <a href="#" onclick="showPage('ranking');return false;">推荐榜</a>
+            </div>
+            <div class="footer-col">
+                <h4>关于</h4>
+                <a href="https://www.zhihu.com/people/yunfeng-87" target="_blank">作者知乎主页</a>
+                <a href="https://github.com/vra/zhihu-agent" target="_blank">提交 Issue</a>
+                <a href="https://www.zhihu.com/special/hackathon" target="_blank">知乎 Hackathon</a>
+            </div>
+            <div class="footer-col">
+                <h4>赛道</h4>
+                <a href="#">引力场 · 内容分发</a>
+                <a href="#">知乎 Hackathon 2026</a>
+                <a href="#">AI 脑洞实验室</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        © 2026 刘看山推荐 · 知乎 Hackathon | AI 脑洞实验室参赛作品 · 
+        <a href="https://github.com/vra/zhihu-agent" target="_blank" style="color:rgba(255,255,255,0.5);text-decoration:none;">GitHub</a> · 
+        <a href="https://www.zhihu.com/people/yunfeng-87" target="_blank" style="color:rgba(255,255,255,0.5);text-decoration:none;">@yunfeng-87</a>
+    </div>
+</footer>
 
-<!-- ========== JavaScript ========== -->
+<!-- ═══ Loading Overlay ═══ -->
+<div id="loading-overlay" class="overlay">
+    <div class="loading-box">
+        <div class="loading-orbit">
+            <img src="/assets/liukanshan/liukanshan-1.png" alt="" class="orbit-item">
+            <img src="/assets/liukanshan/liukanshan-2.png" alt="" class="orbit-item">
+            <img src="/assets/liukanshan/liukanshan-3.png" alt="" class="orbit-item">
+            <img src="/assets/liukanshan/liukanshan-4.png" alt="" class="orbit-item">
+        </div>
+        <div class="loading-title">刘看山正在审阅</div>
+        <div class="loading-desc" id="loading-text">刘看山评审团正在认真阅读你的内容</div>
+        <div class="loading-dots"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
+    </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<!-- ═══ JavaScript ═══ -->
 <script>
 const API_BASE = window.location.origin;
 let currentUser = { zhihu_id: 'demo_user', zhihu_name: '演示用户' };
 
-// ──── 页面切换 ────
 function showPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
     const el = document.getElementById(`page-${page}`);
-    if (el) {
-        el.classList.remove('hidden');
-        el.classList.add('fade-in');
-    }
+    if (el) { el.classList.remove('hidden'); el.classList.add('fade-in'); }
+    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
     if (page === 'ranking') loadRecommendations();
     if (page === 'profile') loadProfile();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// ──── Tab 切换 ────
 function switchTab(tab) {
-    document.getElementById('tab-url').classList.toggle('tab-active', tab === 'url');
-    document.getElementById('tab-text').classList.toggle('tab-active', tab === 'text');
-    document.getElementById('tab-url').classList.toggle('text-gray-400', tab !== 'url');
-    document.getElementById('tab-text').classList.toggle('text-gray-400', tab !== 'text');
+    document.getElementById('tab-url').classList.toggle('active', tab === 'url');
+    document.getElementById('tab-text').classList.toggle('active', tab === 'text');
     document.getElementById('form-url').classList.toggle('hidden', tab !== 'url');
     document.getElementById('form-text').classList.toggle('hidden', tab !== 'text');
 }
+function showToast(msg, d=3000) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),d); }
+function showLoading(text) { document.getElementById('loading-text').textContent=text||'刘看山评审团正在认真阅读你的内容'; document.getElementById('loading-overlay').classList.add('show'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
 
-// ──── Toast ────
-function showToast(msg, duration = 3000) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.remove('hidden');
-    setTimeout(() => t.classList.add('hidden'), duration);
-}
-
-// ──── Loading ────
-function showLoading(text) {
-    document.getElementById('loading-text').innerHTML = text + '<span class="loading-dots"></span>';
-    document.getElementById('loading-overlay').classList.remove('hidden');
-}
-function hideLoading() {
-    document.getElementById('loading-overlay').classList.add('hidden');
-}
-
-// ──── 更新额度显示 ────
 async function refreshQuota() {
-    try {
-        const res = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`);
-        const data = await res.json();
-        const q = data.remaining_quota;
-        document.getElementById('quota-count').textContent = q;
-        document.getElementById('profile-quota').textContent = q;
-    } catch(e) { console.error(e); }
+    try { const r=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`); const d=await r.json(); document.getElementById('quota-count').textContent=d.remaining_quota; } catch(e) { console.error(e); }
 }
-
-// ──── 提交 URL ────
 async function submitUrl() {
-    const url = document.getElementById('input-url').value.trim();
-    if (!url) { showToast('请输入知乎内容链接'); return; }
-    if (!url.includes('zhihu.com') && !url.startsWith('http')) {
-        showToast('请输入有效的知乎链接'); return;
-    }
-
-    showLoading('5 位评审官正在认真阅读你的内容');
-    try {
-        const res = await fetch(`${API_BASE}/api/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                content_url: url,
-                zhihu_id: currentUser.zhihu_id,
-                zhihu_name: currentUser.zhihu_name,
-            }),
-        });
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.detail || '提交失败');
-        }
-        const data = await res.json();
-        hideLoading();
-        showResult(data);
-        refreshQuota();
-        document.getElementById('input-url').value = '';
-    } catch(e) {
-        hideLoading();
-        showToast('❌ ' + e.message);
-    }
+    const url=document.getElementById('input-url').value.trim();
+    if(!url){showToast('请输入知乎内容链接');return;}
+    showLoading(); try { const r=await fetch(`${API_BASE}/api/submit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content_url:url,zhihu_id:currentUser.zhihu_id,zhihu_name:currentUser.zhihu_name})}); if(!r.ok){const e=await r.json();throw new Error(e.detail||'提交失败');} const d=await r.json(); hideLoading(); showResult(d); refreshQuota(); document.getElementById('input-url').value=''; } catch(e){hideLoading();showToast(e.message);}
 }
-
-// ──── 提交文本 ────
 async function submitText() {
-    const title = document.getElementById('input-title').value.trim();
-    const content = document.getElementById('input-content').value.trim();
-    if (!title || !content) { showToast('请输入标题和内容'); return; }
-    if (content.length < 50) { showToast('内容太短了，至少需要 50 字'); return; }
-
-    showLoading('5 位评审官正在认真阅读你的内容');
-    try {
-        const res = await fetch(`${API_BASE}/api/review-text`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title, content,
-                zhihu_id: currentUser.zhihu_id,
-                zhihu_name: currentUser.zhihu_name,
-            }),
-        });
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.detail || '提交失败');
-        }
-        const data = await res.json();
-        hideLoading();
-        showResult(data);
-        refreshQuota();
-        document.getElementById('input-title').value = '';
-        document.getElementById('input-content').value = '';
-    } catch(e) {
-        hideLoading();
-        showToast('❌ ' + e.message);
-    }
+    const title=document.getElementById('input-title').value.trim(), content=document.getElementById('input-content').value.trim();
+    if(!title||!content){showToast('请输入标题和内容');return;} if(content.length<50){showToast('内容太短，至少需要 50 字');return;}
+    showLoading(); try { const r=await fetch(`${API_BASE}/api/review-text`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,content,zhihu_id:currentUser.zhihu_id,zhihu_name:currentUser.zhihu_name})}); if(!r.ok){const e=await r.json();throw new Error(e.detail||'提交失败');} const d=await r.json(); hideLoading(); showResult(d); refreshQuota(); document.getElementById('input-title').value=''; document.getElementById('input-content').value=''; } catch(e){hideLoading();showToast(e.message);}
 }
+function scoreLevel(v){return v>=7?'high':v>=5?'mid':'low';}
 
-// ──── 显示评审结果 ────
 function showResult(data) {
-    const isRecommended = data.status === 'recommended';
-    const scores = data.scores;
-    const agents = data.agent_reports || {};
-
-    const scoreItems = [
-        { key: 'depth', label: '🎓 内容深度', color: 'blue' },
-        { key: 'originality', label: '💡 原创性', color: 'yellow' },
-        { key: 'readability', label: '📖 可读性', color: 'green' },
-        { key: 'professionalism', label: '🎯 专业度', color: 'indigo' },
-        { key: 'community', label: '🤝 社区价值', color: 'purple' },
-        { key: 'ai_detection', label: '🔍 人类原创', color: 'red' },
-    ];
-
-    let agentDetailsHtml = '';
-    for (const item of scoreItems) {
-        const agent = agents[item.key] || {};
-        agentDetailsHtml += `
-        <div class="bg-gray-50 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-                <span class="font-medium text-sm">${item.label}</span>
-                <span class="font-bold text-lg ${scores[item.key] >= 7 ? 'text-green-600' : scores[item.key] >= 5 ? 'text-yellow-600' : 'text-red-500'}">${(scores[item.key] || 0).toFixed(1)}</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
-                <div class="bg-${item.color}-500 h-2 rounded-full score-bar" style="width: ${(scores[item.key] || 0) * 10}%"></div>
-            </div>
-            <p class="text-xs text-gray-500">${agent.comment || ''}</p>
-            <p class="text-xs text-gray-400 mt-1">${agent.details || ''}</p>
-        </div>`;
-    }
-
-    let tipsHtml = '';
-    if (data.improvement_tips && data.improvement_tips.length) {
-        tipsHtml = data.improvement_tips.map((t, i) => `<li class="text-sm text-gray-600">${t}</li>`).join('');
-    }
-
-    const html = `
-    <div class="mb-4">
-        <button onclick="showPage('home')" class="text-sm text-gray-500 hover:text-fox transition">← 返回提交</button>
-    </div>
-
-    <!-- 评审报告卡片 -->
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <!-- 头部 -->
-        <div class="${isRecommended ? 'bg-gradient-to-r from-fox to-orange-400' : 'bg-gradient-to-r from-gray-600 to-gray-500'} p-6 text-white">
-            <div class="flex items-center gap-4">
-                <span class="text-5xl">${isRecommended ? '🏆' : '📝'}</span>
-                <div>
-                    <h2 class="text-2xl font-bold">${isRecommended ? '推荐成功！' : '暂未推荐'}</h2>
-                    <p class="text-white/80 text-sm mt-1">${isRecommended ? data.recommend_reason || '优质内容，值得推荐' : '继续加油，看看改进建议吧'}</p>
-                </div>
-                <div class="ml-auto text-center">
-                    <div class="text-4xl font-bold">${scores.overall.toFixed(1)}</div>
-                    <div class="text-sm text-white/70">综合评分</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 刘看山点评 -->
-        <div class="p-6 border-b">
-            <div class="flex items-start gap-3">
-                <span class="text-3xl">🦊</span>
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-1">刘看山点评</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed">${data.review_summary || '感谢你的创作！'}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 各维度评分 -->
-        <div class="p-6 border-b">
-            <h3 class="font-bold text-gray-800 mb-4">📊 各维度评分</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                ${agentDetailsHtml}
-            </div>
-        </div>
-
-        <!-- 改进建议 -->
-        ${tipsHtml ? `
-        <div class="p-6">
-            <h3 class="font-bold text-gray-800 mb-3">📈 改进建议</h3>
-            <ol class="list-decimal list-inside space-y-2">
-                ${tipsHtml}
-            </ol>
-        </div>` : ''}
-    </div>`;
-
-    document.getElementById('result-content').innerHTML = html;
+    const isRec=data.status==='recommended', scores=data.scores, agents=data.agent_reports||{};
+    const dims=[{key:'depth',label:'内容深度'},{key:'originality',label:'原创性'},{key:'readability',label:'可读性'},{key:'professionalism',label:'专业度'},{key:'community',label:'社区价值'},{key:'ai_detection',label:'人类原创'}];
+    let scoreHtml=dims.map(d=>{const v=scores[d.key]||0,lv=scoreLevel(v),a=agents[d.key]||{};return`<div class="score-row"><div class="score-row-top"><span class="score-row-name">${d.label}</span><span class="score-row-value ${lv}">${v.toFixed(1)}</span></div><div class="score-bar-bg"><div class="score-bar-fill ${lv}" style="width:${v*10}%"></div></div>${a.comment?`<div class="score-comment">${a.comment}</div>`:''}</div>`;}).join('');
+    let tipsHtml=''; if(data.improvement_tips&&data.improvement_tips.length){tipsHtml=`<div class="result-section"><div class="result-section-title">改进建议</div><ul class="tips-list">${data.improvement_tips.map((t,i)=>`<li class="tips-item"><span class="tips-num">${i+1}</span><span>${t}</span></li>`).join('')}</ul></div>`;}
+    const ol=scoreLevel(scores.overall), st=isRec?'推荐成功':data.status==='needs_improvement'?'有待提升':'暂未推荐', rt=isRec?(data.recommend_reason||'优质内容，值得推荐'):'查看下方建议，继续打磨你的内容';
+    document.getElementById('result-content').innerHTML=`<div style="margin-bottom:16px"><button onclick="showPage('home')" class="btn btn-ghost">← 返回</button></div><div class="result-header ${data.status}"><div class="result-score-ring ${ol}"><span class="result-score-num">${scores.overall.toFixed(1)}</span><span class="result-score-label">综合</span></div><div><div class="result-status">${st}</div><div class="result-reason">${rt}</div></div></div><div class="result-body"><div class="result-section"><div class="result-section-title">评审点评</div><div class="review-text">${data.review_summary||'感谢你的创作！'}</div></div><div class="result-section"><div class="result-section-title">各维度评分</div><div class="score-grid">${scoreHtml}</div></div>${tipsHtml}</div>`;
     showPage('result');
 }
 
-// ──── 加载推荐榜 ────
 async function loadRecommendations() {
-    const category = document.getElementById('filter-category').value;
-    const sort = document.getElementById('filter-sort').value;
-    try {
-        const res = await fetch(`${API_BASE}/api/recommendations?limit=20&category=${category}&sort=${sort}`);
-        const data = await res.json();
-        const list = data.recommendations || [];
-
-        if (list.length === 0) {
-            document.getElementById('ranking-list').innerHTML = `
-                <div class="text-center py-12 text-gray-400">
-                    <span class="text-4xl">🦊</span>
-                    <p class="mt-2">暂无推荐内容，快来提交第一篇吧！</p>
-                </div>`;
-            return;
-        }
-
-        let html = '';
-        list.forEach((rec, idx) => {
-            const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
-            html += `
-            <div class="bg-white rounded-xl shadow-sm p-5 card-hover">
-                <div class="flex items-start gap-4">
-                    <div class="text-2xl font-bold text-gray-300 w-10 text-center flex-shrink-0">${medal}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="bg-fox-light text-fox text-xs px-2 py-0.5 rounded">${rec.category || '其他'}</span>
-                            <span class="text-xs text-gray-400">${rec.zhihu_name || '匿名'}</span>
-                        </div>
-                        <h4 class="font-bold text-gray-800 truncate">${rec.content_title || '无标题'}</h4>
-                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">${rec.content_summary || rec.recommend_reason || ''}</p>
-                        <div class="flex items-center gap-4 mt-3">
-                            <span class="text-xs text-gray-400">🎓 ${(rec.depth_score||0).toFixed(1)}</span>
-                            <span class="text-xs text-gray-400">💡 ${(rec.originality_score||0).toFixed(1)}</span>
-                            <span class="text-xs text-gray-400">📖 ${(rec.readability_score||0).toFixed(1)}</span>
-                            <span class="text-xs text-gray-400">🔍 ${(rec.ai_detection_score||0).toFixed(1)}</span>
-                        </div>
-                    </div>
-                    <div class="text-center flex-shrink-0">
-                        <div class="text-2xl font-bold ${rec.overall_score >= 8 ? 'text-green-600' : 'text-fox'}">${(rec.overall_score||0).toFixed(1)}</div>
-                        <div class="text-xs text-gray-400">综合分</div>
-                    </div>
-                </div>
-                ${rec.recommend_reason ? `<div class="mt-3 pt-3 border-t text-xs text-gray-500">🦊 ${rec.recommend_reason}</div>` : ''}
-            </div>`;
-        });
-        document.getElementById('ranking-list').innerHTML = html;
-    } catch(e) {
-        console.error(e);
-        showToast('加载推荐榜失败');
-    }
+    const cat=document.getElementById('filter-category').value, sort=document.getElementById('filter-sort').value;
+    try { const r=await fetch(`${API_BASE}/api/recommendations?limit=20&category=${cat}&sort=${sort}`); const d=await r.json(); if(d.recommendations&&d.recommendations.length){renderRecommendations(d.recommendations);return;} } catch(e){}
+    let f=[...MOCK_RECOMMENDATIONS]; if(cat)f=f.filter(r=>r.category===cat); if(sort==='score')f.sort((a,b)=>b.overall_score-a.overall_score); renderRecommendations(f);
+}
+function renderRecommendations(list) {
+    if(!list.length){document.getElementById('ranking-list').innerHTML=`<div class="empty"><div class="empty-icon"><img src="/assets/liukanshan/liukanshan-logo.png" alt=""></div><p>该分类暂无推荐内容</p></div>`;return;}
+    document.getElementById('ranking-list').innerHTML=list.map((rec,i)=>{const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'',rt=i<3?['①','②','③'][i]:`${i+1}`,sl=scoreLevel(rec.overall_score||0);return`<div class="rec-card"><div class="rec-top"><div class="rec-rank ${rc}">${rt}</div><div class="rec-body"><div class="rec-meta"><span class="rec-tag">${rec.category||'其他'}</span><span class="rec-author">${rec.zhihu_name||'匿名'}</span></div><div class="rec-title-text">${rec.content_title||'无标题'}</div>${rec.recommend_reason?`<div class="rec-reason-text">${rec.recommend_reason}</div>`:''}</div><div class="rec-score-box"><div class="rec-score-num ${sl}">${(rec.overall_score||0).toFixed(1)}</div><div class="rec-score-label">综合分</div></div></div></div>`;}).join('');
 }
 
-// ──── 加载个人中心 ────
 async function loadProfile() {
-    try {
-        const res = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`);
-        const userData = await res.json();
-        const user = userData.user;
-
-        document.getElementById('profile-name').textContent = user.zhihu_name || currentUser.zhihu_name;
-        document.getElementById('profile-zhihu-id').textContent = user.zhihu_id;
-        document.getElementById('profile-quota').textContent = userData.remaining_quota;
-        document.getElementById('profile-total').textContent = user.total_submissions;
-        document.getElementById('profile-recommended').textContent = user.total_recommended;
-        const rate = user.total_submissions > 0 ? Math.round(user.total_recommended / user.total_submissions * 100) : 0;
-        document.getElementById('profile-rate').textContent = rate + '%';
-
-        // 加载历史
-        const histRes = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}/submissions`);
-        const histData = await histRes.json();
-        const submissions = histData.submissions || [];
-
-        if (submissions.length === 0) {
-            document.getElementById('history-list').innerHTML = `
-                <div class="text-center py-8 text-gray-400"><p>暂无评审记录</p></div>`;
-            return;
-        }
-
-        let html = '';
-        submissions.forEach(s => {
-            const isRec = s.status === 'recommended';
-            html += `
-            <div class="bg-white rounded-lg shadow-sm p-4 card-hover cursor-pointer" onclick="viewSubmission(${s.id})">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span class="${isRec ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'} text-xs px-2 py-0.5 rounded">
-                                ${isRec ? '✅ 已推荐' : s.status === 'pending' ? '⏳ 评审中' : '📝 未推荐'}
-                            </span>
-                            <span class="text-xs text-gray-400">${s.created_at || ''}</span>
-                        </div>
-                        <h4 class="font-medium text-gray-800 mt-1 truncate">${s.content_title || '无标题'}</h4>
-                    </div>
-                    <div class="text-xl font-bold ${(s.overall_score||0) >= 7 ? 'text-green-600' : 'text-gray-400'} ml-4">
-                        ${(s.overall_score||0).toFixed(1)}
-                    </div>
-                </div>
-            </div>`;
-        });
-        document.getElementById('history-list').innerHTML = html;
-    } catch(e) {
-        console.error(e);
-    }
+    try { const r=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`); const ud=await r.json(), u=ud.user; document.getElementById('profile-name').textContent=u.zhihu_name||currentUser.zhihu_name; document.getElementById('profile-zhihu-id').textContent=u.zhihu_id; document.getElementById('profile-quota').textContent=ud.remaining_quota; document.getElementById('profile-total').textContent=u.total_submissions; document.getElementById('profile-recommended').textContent=u.total_recommended; document.getElementById('profile-rate').textContent=(u.total_submissions>0?Math.round(u.total_recommended/u.total_submissions*100):0)+'%';
+    const hr=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}/submissions`); const hd=await hr.json(), subs=hd.submissions||[]; if(!subs.length){document.getElementById('history-list').innerHTML=`<div class="empty"><p>暂无评审记录</p></div>`;return;}
+    document.getElementById('history-list').innerHTML=subs.map(s=>{const ir=s.status==='recommended',bc=ir?'rec':s.status==='pending'?'pending':'rej',bt=ir?'已推荐':s.status==='pending'?'评审中':'未推荐',sl=scoreLevel(s.overall_score||0);return`<div class="history-card" onclick="viewSubmission(${s.id})"><div><div style="display:flex;align-items:center;gap:6px"><span class="history-badge ${bc}">${bt}</span><span class="history-time">${s.created_at||''}</span></div><div class="history-title truncate">${s.content_title||'无标题'}</div></div><div class="history-score ${sl}">${(s.overall_score||0).toFixed(1)}</div></div>`;}).join('');
+    } catch(e){console.error(e);}
 }
-
-// ──── 查看历史评审详情 ────
 async function viewSubmission(id) {
-    showLoading('正在加载评审报告');
-    try {
-        const res = await fetch(`${API_BASE}/api/submission/${id}`);
-        const data = await res.json();
-        hideLoading();
-        showResult({
-            status: data.status,
-            scores: {
-                overall: data.overall_score,
-                depth: data.depth_score,
-                originality: data.originality_score,
-                readability: data.readability_score,
-                professionalism: data.professionalism_score,
-                community: data.community_score,
-                ai_detection: data.ai_detection_score,
-            },
-            review_summary: data.review_summary,
-            improvement_tips: data.improvement_tips || [],
-            recommend_reason: '',
-            agent_reports: data.agent_reports || {},
-        });
-    } catch(e) {
-        hideLoading();
-        showToast('加载失败');
-    }
+    showLoading('正在加载评审报告'); try { const r=await fetch(`${API_BASE}/api/submission/${id}`); const d=await r.json(); hideLoading(); showResult({status:d.status,scores:{overall:d.overall_score,depth:d.depth_score,originality:d.originality_score,readability:d.readability_score,professionalism:d.professionalism_score,community:d.community_score,ai_detection:d.ai_detection_score},review_summary:d.review_summary,improvement_tips:d.improvement_tips||[],recommend_reason:'',agent_reports:d.agent_reports||{}}); } catch(e){hideLoading();showToast('加载失败');}
 }
 
-// ──── 初始化 ────
+const MOCK_RECOMMENDATIONS = [
+    {id:1,category:'科技',zhihu_name:'张三丰',content_title:'深入理解 Transformer 架构：从 Attention 到 GPT 的技术演进',overall_score:9.2,recommend_reason:'系统性地梳理了 Transformer 架构的核心原理，从 Self-Attention 机制到多头注意力，再到位置编码，层层递进。配合清晰的数学推导和代码实现，是难得的深度技术文章。'},
+    {id:2,category:'人文',zhihu_name:'李白的月光',content_title:'从《百年孤独》看拉美文学中的时间叙事与家族记忆',overall_score:8.8,recommend_reason:'以独特的视角分析了马尔克斯的时间叙事手法，将循环时间观与拉美历史背景相结合，论证严密，引用丰富，展现了深厚的文学素养。'},
+    {id:3,category:'职场',zhihu_name:'码农老王',content_title:'工作十年后我才明白的 8 个职场真相',overall_score:8.5,recommend_reason:'不同于常见的鸡汤文，作者用真实的职场经历和具体案例来阐述观点，每个"真相"都有数据或故事支撑，实用性强，对职场新人有很好的参考价值。'},
+    {id:4,category:'科技',zhihu_name:'量子纠缠',content_title:'为什么说量子计算不会取代经典计算机？一个物理学家的冷思考',overall_score:8.3,recommend_reason:'难得的理性科普文章，作者从量子退相干、纠错开销、算法适用性三个维度分析了量子计算的局限性，避免了媒体常见的过度炒作，专业且客观。'},
+    {id:5,category:'教育',zhihu_name:'教育观察者',content_title:'芬兰教育神话的背后：我在赫尔辛基小学做了一年志愿者',overall_score:8.1,recommend_reason:'第一手的观察记录，打破了很多人对芬兰教育的刻板印象。作者详细记录了课堂互动、教师培训、家校关系等方面的真实情况，视角独特，内容翔实。'},
+    {id:6,category:'财经',zhihu_name:'价值猎手',content_title:'从财报角度拆解：为什么 Costco 的商业模式几乎无法复制',overall_score:7.9,recommend_reason:'深入分析了 Costco 的会员制模型、供应链效率和 SKU 策略，用详实的财务数据支撑论点，逻辑清晰，对理解零售行业有很好的启发。'},
+    {id:7,category:'生活',zhihu_name:'城市漫步者',content_title:'我用 365 天走遍了北京所有胡同，记录下正在消失的老北京',overall_score:7.8,recommend_reason:'用影像和文字记录了北京胡同的现状，既有历史考据也有人文关怀。作者对每条胡同的历史渊源和现状变迁都做了详细记录，是珍贵的城市记忆档案。'},
+    {id:8,category:'健康',zhihu_name:'循证医学Dr',content_title:'关于间歇性断食，目前科学研究到底怎么说？',overall_score:7.6,recommend_reason:'系统梳理了间歇性断食领域的主要临床研究，区分了动物实验和人体试验的结论差异，引用了 20+ 篇高质量论文，是难得的循证科普。'},
+    {id:9,category:'科技',zhihu_name:'分布式老司机',content_title:'从零设计一个百万级并发的消息队列系统',overall_score:7.5,recommend_reason:'从需求分析到架构设计，再到关键技术选型，完整展示了消息队列系统的设计过程。对比了 Kafka、RocketMQ 等方案的优劣，实战经验丰富。'},
+    {id:10,category:'人文',zhihu_name:'哲学散步',content_title:'维特根斯坦的「语言游戏」如何影响了当代 AI 的发展方向',overall_score:7.3,recommend_reason:'跨学科视角独特，将维特根斯坦的语言哲学与现代 NLP 技术发展相联系，论证有深度，为理解 AI 语言理解提供了哲学层面的思考框架。'},
+    {id:11,category:'生活',zhihu_name:'厨房实验室',content_title:'用食品科学的方法，我找到了完美溏心蛋的精确参数',overall_score:7.2,recommend_reason:'将科学实验方法应用到日常烹饪中，控制变量、多次实验、数据记录，最终给出了不同海拔、不同鸡蛋大小下的最优时间参数，趣味性与实用性兼具。'},
+    {id:12,category:'职场',zhihu_name:'产品汪阿花',content_title:'复盘：我是如何把一个日活 50 的产品做到日活 50 万的',overall_score:7.1,recommend_reason:'真实的产品增长案例复盘，从用户调研、功能迭代到增长策略，每个阶段都有具体的数据和决策逻辑，对产品经理和创业者有很好的参考价值。'},
+];
+const MOCK_HISTORY = [
+    {id:101,status:'recommended',content_title:'深入理解 Transformer 架构：从 Attention 到 GPT 的技术演进',overall_score:9.2,created_at:'2026-05-10 06:30'},
+    {id:102,status:'recommended',content_title:'为什么我认为 Rust 将成为系统编程的未来',overall_score:7.8,created_at:'2026-05-09 14:20'},
+    {id:103,status:'needs_improvement',content_title:'聊聊最近对 AI Agent 的一些思考',overall_score:6.2,created_at:'2026-05-08 09:15'},
+    {id:104,status:'recommended',content_title:'从零搭建一个高可用的微服务架构',overall_score:8.1,created_at:'2026-05-07 18:45'},
+    {id:105,status:'rejected',content_title:'今天天气真好',overall_score:2.3,created_at:'2026-05-06 10:00'},
+];
+
+function renderMockProfile() {
+    document.getElementById('profile-name').textContent='演示用户';
+    document.getElementById('profile-zhihu-id').textContent='demo_user';
+    document.getElementById('profile-quota').textContent='100';
+    document.getElementById('profile-total').textContent=MOCK_HISTORY.length;
+    const rc=MOCK_HISTORY.filter(s=>s.status==='recommended').length;
+    document.getElementById('profile-recommended').textContent=rc;
+    document.getElementById('profile-rate').textContent=(MOCK_HISTORY.length>0?Math.round(rc/MOCK_HISTORY.length*100):0)+'%';
+    document.getElementById('history-list').innerHTML=MOCK_HISTORY.map(s=>{const ir=s.status==='recommended',bc=ir?'rec':s.status==='needs_improvement'?'pending':'rej',bt=ir?'已推荐':s.status==='needs_improvement'?'待提升':'未推荐',sl=scoreLevel(s.overall_score||0);return`<div class="history-card"><div><div style="display:flex;align-items:center;gap:6px"><span class="history-badge ${bc}">${bt}</span><span class="history-time">${s.created_at||''}</span></div><div class="history-title truncate">${s.content_title||'无标题'}</div></div><div class="history-score ${sl}">${(s.overall_score||0).toFixed(1)}</div></div>`;}).join('');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     refreshQuota();
+    renderRecommendations(MOCK_RECOMMENDATIONS);
+    renderMockProfile();
 });
 </script>
-
 </body>
 </html>
+

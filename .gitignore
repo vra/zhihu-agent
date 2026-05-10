@@ -57,3 +57,6 @@ liukanshan/*.ai
 
 # Frontend build artifacts
 frontend/dist/
+
+# EdgeOne deploy artifacts
+frontend-deploy/
