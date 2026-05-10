@@ -18,6 +18,7 @@ out/
 build/
 
 # Environment
+.env
 .env.local
 .env.*.local
 
@@ -40,6 +41,19 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Large binary assets (3D models, PSD, etc.)
+*.obj
+*.c4d
+*.psd
+*.ai
+liukanshan/*.obj
+liukanshan/*.c4d
+liukanshan/*.psd
+liukanshan/*.ai
+
 # Cache
 .cache/
 .pytest_cache/
+
+# Frontend build artifacts
+frontend/dist/

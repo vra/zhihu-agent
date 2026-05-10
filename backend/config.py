@@ -23,7 +23,7 @@ ZHIHU_AGENT_API = "https://api.zhihu.com/v1/chat/completions"
 DATABASE_PATH = os.path.join(os.path.dirname(__file__), "data", "liukanshan.db")
 
 # 额度配置
-WEEKLY_INITIAL_QUOTA = 3       # 每周初始额度
+WEEKLY_INITIAL_QUOTA = 100     # 每周初始额度（调试模式）
 RECOMMEND_SUCCESS_BONUS = 2    # 推荐成功奖励额度
 HIGH_SCORE_BONUS = 3           # 高分（≥9.0）额外奖励
 WEEKLY_QUOTA_CAP = 15          # 单周额度上限

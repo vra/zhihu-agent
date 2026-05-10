@@ -1,0 +1,6 @@
+{
+  "name": "liukanshan-recommend",
+  "build": {
+    "output": "frontend"
+  }
+}

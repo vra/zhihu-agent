@@ -1,7 +1,7 @@
 """数据库初始化与操作"""
 import os
 import aiosqlite
-from config import DATABASE_PATH
+from config import DATABASE_PATH, WEEKLY_INITIAL_QUOTA, WEEKLY_QUOTA_CAP
 
 # 确保数据目录存在
 os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     zhihu_id TEXT UNIQUE NOT NULL,
     zhihu_name TEXT DEFAULT '',
     avatar_url TEXT DEFAULT '',
-    weekly_quota INTEGER DEFAULT 3,
+    weekly_quota INTEGER DEFAULT 100,
     quota_used INTEGER DEFAULT 0,
     quota_week TEXT DEFAULT '',
     total_submissions INTEGER DEFAULT 0,
@@ -106,11 +106,11 @@ async def get_or_create_user(zhihu_id: str, zhihu_name: str = "", avatar_url: st
             current_week = datetime.datetime.now().strftime("%Y-W%W")
             if user["quota_week"] != current_week:
                 await db.execute(
-                    "UPDATE users SET weekly_quota = 3, quota_used = 0, quota_week = ? WHERE id = ?",
-                    (current_week, user["id"]),
+                    "UPDATE users SET weekly_quota = ?, quota_used = 0, quota_week = ? WHERE id = ?",
+                    (WEEKLY_INITIAL_QUOTA, current_week, user["id"]),
                 )
                 await db.commit()
-                user["weekly_quota"] = 3
+                user["weekly_quota"] = WEEKLY_INITIAL_QUOTA
                 user["quota_used"] = 0
                 user["quota_week"] = current_week
             return user
@@ -134,8 +134,8 @@ async def update_user_quota(user_id: int, change: int, reason: str, submission_i
     try:
         if change > 0:
             await db.execute(
-                "UPDATE users SET weekly_quota = MIN(weekly_quota + ?, 15) WHERE id = ?",
-                (change, user_id),
+                "UPDATE users SET weekly_quota = MIN(weekly_quota + ?, ?) WHERE id = ?",
+                (change, WEEKLY_INITIAL_QUOTA + WEEKLY_QUOTA_CAP, user_id),
             )
         else:
             await db.execute(

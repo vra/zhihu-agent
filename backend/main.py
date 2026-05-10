@@ -1,5 +1,5 @@
 """
-🦊 刘看山推荐 - 后端服务
+刘看山推荐 - 后端服务
 AI 驱动的去中心化内容发现平台
 """
 import json
@@ -36,13 +36,13 @@ from zhihu_client import fetch_content_by_url, publish_recommendation_pin, zhihu
 async def lifespan(app: FastAPI):
     """应用启动/关闭时的操作"""
     await init_db()
-    print("🦊 刘看山推荐服务已启动！")
+    print("刘看山推荐服务已启动！")
     yield
-    print("🦊 刘看山推荐服务已关闭。")
+    print("刘看山推荐服务已关闭。")
 
 
 app = FastAPI(
-    title="🦊 刘看山推荐",
+    title="刘看山推荐",
     description="AI 驱动的去中心化内容发现平台",
     version="1.0.0",
     lifespan=lifespan,
@@ -58,7 +58,7 @@ app.add_middleware(
 )
 
 # 静态文件服务
-frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 liukanshan_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "liukanshan")
 
 if os.path.exists(liukanshan_dir):
@@ -91,7 +91,7 @@ class SearchRequest(BaseModel):
 @app.get("/api/health")
 async def health_check():
     """健康检查"""
-    return {"status": "ok", "service": "🦊 刘看山推荐"}
+    return {"status": "ok", "service": "刘看山推荐"}
 
 
 # ──── 用户相关 ────
@@ -362,10 +362,10 @@ async def serve_frontend():
     return HTMLResponse(content="""
     <!DOCTYPE html>
     <html>
-    <head><title>🦊 刘看山推荐</title></head>
+    <head><title>刘看山推荐</title></head>
     <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
         <div style="text-align:center;">
-            <h1>🦊 刘看山推荐</h1>
+            <h1>刘看山推荐</h1>
             <p>后端服务已启动！前端页面构建中...</p>
             <p>API 文档: <a href="/docs">/docs</a></p>
         </div>
