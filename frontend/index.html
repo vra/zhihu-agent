@@ -8,56 +8,59 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
         :root {
-            --ink: #1a1a1a; --ink-2: #3d3d3d; --ink-3: #666; --ink-4: #999; --ink-5: #bbb;
-            --surface: #fafafa; --card: #fff; --border: #eee; --border-2: #e0e0e0;
-            --accent: #2B6CB0; --accent-light: #EBF4FF; --accent-dark: #1E4E8C;
-            --green: #2F855A; --green-light: #F0FFF4;
-            --amber: #B7791F; --amber-light: #FFFFF0;
-            --red: #C53030; --red-light: #FFF5F5;
-            --radius: 10px;
-            --shadow: 0 4px 20px rgba(0,0,0,0.06);
-            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --ink: #111827; --ink-2: #374151; --ink-3: #6B7280; --ink-4: #9CA3AF; --ink-5: #D1D5DB;
+            --surface: #F9FAFB; --card: #fff; --border: #F3F4F6; --border-2: #E5E7EB;
+            --accent: #1D4ED8; --accent-light: #EFF6FF; --accent-dark: #1E3A8A;
+            --zhihu-blue: #2563EB; --zhihu-green: #059669; --zhihu-orange: #D97706; --zhihu-purple: #7C3AED;
+            --green: #065F46; --green-light: #ECFDF5;
+            --amber: #92400E; --amber-light: #FFFBEB;
+            --red: #991B1B; --red-light: #FEF2F2;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.03), 0 20px 50px rgba(0,0,0,0.08);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--surface); color: var(--ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--surface); color: var(--ink); line-height: 1.7; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; letter-spacing: -0.01em; }
 
         /* ── Nav ── */
-        .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
-        .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+        .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.88); backdrop-filter: blur(20px) saturate(1.2); border-bottom: 1px solid rgba(0,0,0,0.04); }
+        .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
         .nav-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; color: var(--ink); }
         .nav-logo { width: 32px; height: 32px; object-fit: contain; }
         .nav-title { font-size: 16px; font-weight: 600; }
         .nav-links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-        .nav-link { padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--ink-3); background: none; border: none; border-radius: 6px; cursor: pointer; transition: var(--transition); }
+        .nav-link { padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--ink-3); background: none; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
         .nav-link:hover { color: var(--ink); background: var(--surface); }
-        .nav-link.active { color: var(--accent); background: var(--accent-light); }
-        .nav-quota { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-light); padding: 4px 12px; border-radius: 20px; margin-left: 8px; }
+        .nav-link.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
+        .nav-quota { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-light); padding: 5px 14px; border-radius: 20px; margin-left: 8px; letter-spacing: -0.01em; }
 
         /* ── Layout ── */
         .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; min-height: calc(100vh - 56px - 160px); }
 
         /* ── Hero ── */
-        .hero { padding: 56px 0 40px; text-align: center; }
-        .hero-mascot { width: 72px; height: 72px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08)); }
-        .hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
-        .hero p { font-size: 15px; color: var(--ink-3); max-width: 520px; margin: 0 auto; }
+        .hero { padding: 64px 0 48px; text-align: center; }
+        .hero-mascot { width: 80px; height: 80px; object-fit: contain; margin-bottom: 24px; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.1)); transition: transform 0.3s ease; }
+        .hero-mascot:hover { transform: scale(1.05) rotate(-2deg); }
+        .hero h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 10px; background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero p { font-size: 15px; color: var(--ink-3); max-width: 520px; margin: 0 auto; line-height: 1.8; }
 
         /* ── Card ── */
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; transition: var(--transition); }
-        .card:hover { box-shadow: var(--shadow); }
-        .card-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 16px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 20px; transition: var(--transition); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .card:hover { box-shadow: var(--shadow); border-color: var(--border-2); }
+        .card-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 16px; letter-spacing: -0.02em; }
 
         /* ── Tabs ── */
         .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .tab-btn { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--ink-4); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: var(--transition); }
+        .tab-btn { padding: 12px 18px; font-size: 13px; font-weight: 500; color: var(--ink-4); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s ease; }
         .tab-btn:hover { color: var(--ink-2); }
-        .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
+        .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
 
         /* ── Form ── */
         .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-3); margin-bottom: 6px; }
-        .form-input, .form-textarea { width: 100%; padding: 10px 14px; font-size: 14px; font-family: inherit; border: 1px solid var(--border-2); border-radius: 8px; background: var(--card); color: var(--ink); transition: var(--transition); }
-        .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+        .form-input, .form-textarea { width: 100%; padding: 11px 16px; font-size: 14px; font-family: inherit; border: 1px solid var(--border-2); border-radius: 10px; background: var(--surface); color: var(--ink); transition: all 0.2s ease; }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,78,216,0.08); background: var(--card); }
         .form-input::placeholder, .form-textarea::placeholder { color: var(--ink-5); }
         .form-textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
         .form-hint { font-size: 12px; color: var(--ink-4); margin-top: 6px; }
@@ -65,37 +68,40 @@
         .form-group { margin-bottom: 14px; }
 
         /* ── Button ── */
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 24px; font-size: 14px; font-weight: 600; font-family: inherit; border: none; border-radius: 8px; cursor: pointer; transition: var(--transition); }
-        .btn-primary { background: var(--ink); color: #fff; }
-        .btn-primary:hover { background: var(--ink-2); }
-        .btn-primary:disabled { background: var(--ink-5); cursor: not-allowed; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 24px; font-size: 14px; font-weight: 600; font-family: inherit; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .btn-primary { background: var(--ink); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .btn-primary:hover { background: var(--ink-2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn-primary:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .btn-primary:disabled { background: var(--ink-5); cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-ghost { background: none; color: var(--ink-3); padding: 6px 12px; }
         .btn-ghost:hover { color: var(--ink); background: var(--surface); }
 
         /* ── Features Grid ── */
         .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-        .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; transition: var(--transition); }
-        .feature-card:hover { box-shadow: var(--shadow); border-color: var(--border-2); }
-        .feature-icon { font-size: 32px; margin-bottom: 12px; }
-        .feature-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-        .feature-desc { font-size: 12px; color: var(--ink-4); line-height: 1.6; }
+        .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--zhihu-purple)); opacity: 0; transition: opacity 0.3s; }
+        .feature-card:hover { box-shadow: var(--shadow-lg); border-color: transparent; transform: translateY(-2px); }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-icon { width: 40px; height: 40px; margin: 0 auto 14px; background: var(--surface); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .feature-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.02em; }
+        .feature-desc { font-size: 12px; color: var(--ink-3); line-height: 1.7; }
 
         /* ── Steps ── */
         .steps { display: flex; gap: 0; margin: 24px 0; }
         .step { flex: 1; text-align: center; position: relative; }
         .step::after { content: '→'; position: absolute; right: -8px; top: 16px; color: var(--ink-5); font-size: 18px; }
         .step:last-child::after { display: none; }
-        .step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 14px; font-weight: 700; }
+        .step-num { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--ink), var(--ink-2)); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 14px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .step-title { font-size: 13px; font-weight: 600; }
         .step-desc { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
 
         /* ── Agents Grid ── */
         .agents-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .agent-card { padding: 16px; border: 1px solid var(--border); border-radius: 8px; text-align: center; transition: var(--transition); }
-        .agent-card:hover { border-color: var(--border-2); background: var(--surface); }
-        .agent-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 16px; }
-        .agent-name { font-size: 13px; font-weight: 600; }
-        .agent-desc { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
+        .agent-card { padding: 18px 16px; border: 1px solid var(--border); border-radius: 10px; text-align: center; transition: all 0.25s ease; }
+        .agent-card:hover { border-color: var(--accent); background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(29,78,216,0.08); }
+        .agent-avatar { width: 38px; height: 38px; border-radius: 10px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .agent-name { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+        .agent-desc { font-size: 11px; color: var(--ink-4); margin-top: 3px; }
 
         /* ── Loading ── */
         .overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); z-index: 200; justify-content: center; align-items: center; }
@@ -118,31 +124,32 @@
         @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
 
         /* ── Result ── */
-        .result-header { padding: 28px; border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; gap: 20px; }
-        .result-header.recommended { background: var(--green-light); border: 1px solid #C6F6D5; border-bottom: none; }
-        .result-header.rejected { background: var(--surface); border: 1px solid var(--border); border-bottom: none; }
-        .result-header.needs_improvement { background: var(--amber-light); border: 1px solid #FEFCBF; border-bottom: none; }
-        .result-score-ring { width: 72px; height: 72px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-        .result-score-ring.high { background: var(--green); color: #fff; }
-        .result-score-ring.mid { background: var(--amber); color: #fff; }
-        .result-score-ring.low { background: var(--red); color: #fff; }
-        .result-score-num { font-size: 24px; font-weight: 700; line-height: 1; }
-        .result-score-label { font-size: 10px; opacity: 0.8; }
-        .result-status { font-size: 20px; font-weight: 700; }
-        .result-reason { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+        .result-header { padding: 32px; border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; gap: 24px; }
+        .result-header.recommended { background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%); border: 1px solid #A7F3D0; border-bottom: none; }
+        .result-header.rejected { background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%); border: 1px solid var(--border-2); border-bottom: none; }
+        .result-header.needs_improvement { background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1px solid #FDE68A; border-bottom: none; }
+        .result-score-ring { width: 76px; height: 76px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .result-score-ring.high { background: linear-gradient(135deg, #065F46, #059669); color: #fff; }
+        .result-score-ring.mid { background: linear-gradient(135deg, #92400E, #D97706); color: #fff; }
+        .result-score-ring.low { background: linear-gradient(135deg, #991B1B, #DC2626); color: #fff; }
+        .result-score-num { font-size: 26px; font-weight: 700; line-height: 1; }
+        .result-score-label { font-size: 10px; opacity: 0.85; margin-top: 2px; }
+        .result-status { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
+        .result-reason { font-size: 13px; color: var(--ink-3); margin-top: 6px; line-height: 1.6; }
         .result-body { background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); padding: 24px; }
         .result-section { margin-bottom: 24px; }
         .result-section:last-child { margin-bottom: 0; }
         .result-section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-        .score-row { padding: 12px; background: var(--surface); border-radius: 8px; }
-        .score-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .score-row { padding: 14px 16px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); transition: all 0.2s ease; }
+        .score-row:hover { border-color: var(--border-2); background: #fff; }
+        .score-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .score-row-name { font-size: 13px; font-weight: 500; color: var(--ink-2); }
-        .score-row-value { font-size: 16px; font-weight: 700; }
+        .score-row-value { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
         .score-row-value.high { color: var(--green); } .score-row-value.mid { color: var(--amber); } .score-row-value.low { color: var(--red); }
-        .score-bar-bg { width: 100%; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .score-bar-bg { width: 100%; height: 4px; background: var(--border-2); border-radius: 2px; overflow: hidden; }
         .score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease-out; }
-        .score-bar-fill.high { background: var(--green); } .score-bar-fill.mid { background: var(--amber); } .score-bar-fill.low { background: var(--red); }
+        .score-bar-fill.high { background: linear-gradient(90deg, #059669, #34D399); } .score-bar-fill.mid { background: linear-gradient(90deg, #D97706, #FBBF24); } .score-bar-fill.low { background: linear-gradient(90deg, #DC2626, #F87171); }
         .score-comment { font-size: 12px; color: var(--ink-4); margin-top: 6px; line-height: 1.5; }
         .review-text { font-size: 14px; color: var(--ink-2); line-height: 1.8; white-space: pre-wrap; }
         .tips-list { list-style: none; }
@@ -156,8 +163,8 @@
         .ranking-subtitle { font-size: 13px; color: var(--ink-4); margin-top: 2px; }
         .ranking-filters { display: flex; gap: 8px; }
         .filter-select { font-size: 13px; font-family: inherit; padding: 6px 12px; border: 1px solid var(--border-2); border-radius: 6px; background: var(--card); color: var(--ink-2); cursor: pointer; }
-        .rec-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; transition: var(--transition); }
-        .rec-card:hover { box-shadow: var(--shadow); border-color: var(--border-2); }
+        .rec-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 12px; transition: all 0.25s ease; }
+        .rec-card:hover { box-shadow: var(--shadow); border-color: var(--border-2); transform: translateY(-1px); }
         .rec-top { display: flex; align-items: flex-start; gap: 16px; }
         .rec-rank { font-size: 14px; font-weight: 700; color: var(--ink-5); width: 28px; text-align: center; flex-shrink: 0; padding-top: 2px; }
         .rec-rank.gold { color: #D69E2E; } .rec-rank.silver { color: #A0AEC0; } .rec-rank.bronze { color: #C77B3C; }
@@ -180,6 +187,8 @@
         .profile-quota-box { margin-left: auto; text-align: center; }
         .profile-quota-num { font-size: 28px; font-weight: 700; color: var(--accent); }
         .profile-quota-label { font-size: 11px; color: var(--ink-4); }
+        .profile-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 4px; }
+        .profile-badge.lv0 { background: #F0FFF4; color: #2F855A; } .profile-badge.lv1 { background: #EBF4FF; color: #2B6CB0; } .profile-badge.lv2 { background: #FEFCBF; color: #975A16; } .profile-badge.lv3 { background: #FAF5FF; color: #6B46C1; } .profile-badge.lv4 { background: #FFF5F5; color: #C53030; } .profile-badge.lv5 { background: #EDF2F7; color: #1A202C; } .profile-badge.lv6 { background: linear-gradient(135deg, #F6E05E, #D69E2E); color: #744210; }
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
         .stat-item { text-align: center; }
         .stat-num { font-size: 22px; font-weight: 700; }
@@ -240,6 +249,29 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+        /* ── Celebration Effect ── */
+        .celebrate-overlay { position: fixed; inset: 0; z-index: 250; pointer-events: none; overflow: hidden; }
+        .celebrate-overlay .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; animation: particleFall 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
+        @keyframes particleFall {
+            0% { transform: translateY(-20px) rotate(0deg) scale(0); opacity: 0; }
+            10% { opacity: 1; transform: translateY(0) rotate(45deg) scale(1); }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+        }
+        .celebrate-glow { position: fixed; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: radial-gradient(circle, rgba(47,133,90,0.15) 0%, transparent 70%); z-index: 249; pointer-events: none; animation: glowPulse 1.5s ease-out forwards; }
+        @keyframes glowPulse {
+            0% { width: 0; height: 0; margin-left: 0; margin-top: 0; opacity: 0; }
+            50% { width: 600px; height: 600px; margin-left: -300px; margin-top: -300px; opacity: 1; }
+            100% { width: 900px; height: 900px; margin-left: -450px; margin-top: -450px; opacity: 0; }
+        }
+        .result-header.recommended { animation: resultSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes resultSlideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .score-bar-fill { animation: barGrow 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; transform-origin: left; }
+        @keyframes barGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
         @media (max-width: 640px) {
             .nav-inner { padding: 0 16px; } .container { padding: 20px 16px; }
             .hero h1 { font-size: 22px; } .form-row { flex-direction: column; }
@@ -265,7 +297,9 @@
             <button onclick="showPage('ranking')" class="nav-link" data-page="ranking">推荐榜</button>
             <button onclick="showPage('rules')" class="nav-link" data-page="rules">规则说明</button>
             <button onclick="showPage('profile')" class="nav-link" data-page="profile">我的</button>
-            <span class="nav-quota">剩余 <span id="quota-count">100</span> 次</span>
+            <span class="nav-quota">剩余 <span id="quota-count">--</span> 次</span>
+            <button onclick="showLogin()" class="nav-link" id="nav-login-btn">登录</button>
+            <span id="nav-user-info" class="hidden" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink-2)"><span id="nav-badge-text" style="font-size:11px;padding:1px 8px;border-radius:10px;background:var(--accent-light);color:var(--accent)"></span><span id="nav-user-name"></span></span>
         </div>
     </div>
 </nav>
@@ -284,17 +318,17 @@
         <!-- Features -->
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon"></div>
+                <div class="feature-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg></div>
                 <div class="feature-title">内容为王</div>
                 <div class="feature-desc">不看粉丝数、不看点赞量，纯粹从内容深度、原创性、专业度等维度评判</div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon"></div>
+                <div class="feature-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></div>
                 <div class="feature-title">多 Agent 评审</div>
                 <div class="feature-desc">6 位刘看山 AI 评审员从不同角度独立打分，综合得出最终评分，避免单一偏见</div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon"></div>
+                <div class="feature-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg></div>
                 <div class="feature-title">AI 内容鉴别</div>
                 <div class="feature-desc">内置 AI 生成内容检测，鼓励人类原创表达，让真正用心写的内容获得应有的关注</div>
             </div>
@@ -325,6 +359,22 @@
                     <div class="step-desc">≥7.0 分进入推荐榜</div>
                 </div>
             </div>
+        </div>
+
+        <!-- My Content (登录后显示) -->
+        <div id="my-content-card" class="card hidden">
+            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+                我发布的内容
+                <button onclick="loadMyContent()" class="btn btn-ghost" style="font-size:12px">刷新</button>
+            </div>
+            <p style="font-size:13px;color:var(--ink-4);margin-bottom:12px">选择你在知乎发布的文章或回答，提交给刘看山评审团进行 AI 评审推荐</p>
+            <div id="my-content-filter" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+                <button onclick="filterMyContent('all')" class="btn btn-ghost filter-btn active" data-filter="all" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border-2)">全部</button>
+                <button onclick="filterMyContent('answer')" class="btn btn-ghost filter-btn" data-filter="answer" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border-2)">回答</button>
+                <button onclick="filterMyContent('article')" class="btn btn-ghost filter-btn" data-filter="article" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border-2)">文章</button>
+                <button onclick="filterMyContent('pin')" class="btn btn-ghost filter-btn" data-filter="pin" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border-2)">想法</button>
+            </div>
+            <div id="my-content-list"></div>
         </div>
 
         <!-- Submit Form -->
@@ -375,7 +425,7 @@
     <!-- ══ Ranking ══ -->
     <div id="page-ranking" class="page hidden fade-in">
         <div class="ranking-header">
-            <div><div class="ranking-title"> 推荐榜</div><div class="ranking-subtitle">通过 AI 评审的优质内容，值得你花时间阅读</div></div>
+            <div><div class="ranking-title">推荐榜</div><div class="ranking-subtitle">通过 AI 评审的优质内容，值得你花时间阅读</div></div>
             <div class="ranking-filters">
                 <select id="filter-category" onchange="loadRecommendations()" class="filter-select">
                     <option value="">全部分类</option><option value="科技">科技</option><option value="人文">人文</option><option value="生活">生活</option><option value="职场">职场</option><option value="教育">教育</option><option value="财经">财经</option><option value="健康">健康</option><option value="娱乐">娱乐</option>
@@ -391,24 +441,24 @@
     <!-- ══ Rules ══ -->
     <div id="page-rules" class="page hidden fade-in">
         <div class="rules-hero">
-            <h1> 规则说明</h1>
+            <h1>规则说明</h1>
             <p>了解刘看山推荐的评审机制、打分规则和项目愿景</p>
         </div>
 
         <div class="card">
             <div class="rule-section">
-                <h2> 项目愿景</h2>
+                <h2>项目愿景</h2>
                 <p>知乎社区中，大量优质内容因创作者粉丝数不足而难以获得足够的曝光。传统推荐算法往往倾向于推荐已有高互动量的内容，形成「马太效应」——强者愈强，新人难以出头。</p>
                 <p style="margin-top:8px"><strong>「刘看山推荐」</strong>旨在打破这一困境。我们通过多 Agent AI 评审系统，从内容本身的质量出发，不看粉丝数、不看历史数据，纯粹评估内容的深度、原创性、可读性等维度，让真正优质的内容被看见。</p>
                 <div class="highlight-box">
-                    <p> <strong>核心理念：</strong>内容为王。一篇 0 粉丝作者写的深度技术文章，和一篇百万粉丝大V的随笔，在刘看山面前享有完全平等的评审机会。</p>
+                    <p><strong>核心理念：</strong>内容为王。一篇 0 粉丝作者写的深度技术文章，和一篇百万粉丝大V的随笔，在刘看山面前享有完全平等的评审机会。</p>
                 </div>
             </div>
         </div>
 
         <div class="card">
             <div class="rule-section">
-                <h2> 评分维度</h2>
+                <h2>评分维度</h2>
                 <p>每篇内容由 6 位 AI 评审员（刘看山分身）从不同维度独立评分，最终加权计算综合得分：</p>
                 <table class="score-table">
                     <thead><tr><th>维度</th><th>评审员</th><th>权重</th><th>评估要点</th></tr></thead>
@@ -426,19 +476,29 @@
 
         <div class="card">
             <div class="rule-section">
-                <h2> 推荐规则</h2>
+                <h2>推荐规则</h2>
                 <ul>
                     <li><strong>推荐成功：</strong>综合评分 ≥ 7.0 分，内容将进入推荐榜，获得更多曝光机会</li>
                     <li><strong>有待提升：</strong>综合评分 5.0 ~ 6.9 分，系统会给出具体的改进建议</li>
                     <li><strong>暂未推荐：</strong>综合评分 < 5.0 分，建议重新打磨内容后再次提交</li>
                 </ul>
-                <h3>额度机制</h3>
-                <ul>
-                    <li>每位用户每周初始额度为 <strong>100 次</strong></li>
-                    <li>每次提交评审消耗 1 次额度</li>
-                    <li>推荐成功可获得 2 次额外额度奖励</li>
-                    <li>高分（≥ 9.0）可获得 3 次额外额度奖励</li>
-                </ul>
+                <h3>动态额度机制（核心玩法）</h3>
+                <p><strong>设计理念：</strong>新人创作者更需要推荐机会来验证内容质量，而资深创作者已经拥有足够的粉丝基础和内容积累。因此，系统会根据你的<strong>粉丝数</strong>和<strong>赞同数</strong>动态调整每月推荐额度——粉丝越少，额度越高；随名气增长，额度逐步降低，激励你用质量而非数量取胜。</p>
+                <table class="score-table" style="margin-top:12px">
+                    <thead><tr><th>等级</th><th>徽章</th><th>粉丝数</th><th>赞同数</th><th>每月额度</th></tr></thead>
+                    <tbody>
+                        <tr><td>Lv0</td><td>看山小萌新</td><td>0 ~ 99</td><td>0 ~ 499</td><td>100 次</td></tr>
+                        <tr><td>Lv1</td><td>初识看山</td><td>100 ~ 499</td><td>500 ~ 1,999</td><td>35 次</td></tr>
+                        <tr><td>Lv2</td><td>看山常客</td><td>500 ~ 1,999</td><td>2,000 ~ 9,999</td><td>25 次</td></tr>
+                        <tr><td>Lv3</td><td>看山达人</td><td>2,000 ~ 9,999</td><td>10,000 ~ 49,999</td><td>18 次</td></tr>
+                        <tr><td>Lv4</td><td>看山鉴赏家</td><td>10,000 ~ 49,999</td><td>50,000 ~ 199,999</td><td>12 次</td></tr>
+                        <tr><td>Lv5</td><td>看山引航员</td><td>50,000 ~ 199,999</td><td>200,000 ~ 999,999</td><td>8 次</td></tr>
+                        <tr><td>Lv6</td><td>看山传奇</td><td>200,000+</td><td>1,000,000+</td><td>5 次</td></tr>
+                    </tbody>
+                </table>
+                <div class="highlight-box">
+                    <p><strong>冷知识：</strong>等级取粉丝数和赞同数两个维度中较高者决定。也就是说，即使粉丝不多，但你的回答获得大量赞同，一样可以升级！<br>每次额度奖励（推荐成功 +2、高分 +3）不受动态额度影响，所有等级用户统一享受。</p>
+                </div>
                 <h3>内容要求</h3>
                 <ul>
                     <li>支持知乎回答、文章、想法等内容类型</li>
@@ -450,7 +510,7 @@
 
         <div class="card">
             <div class="rule-section">
-                <h2> 技术架构</h2>
+                <h2>技术架构</h2>
                 <p>本项目是参加<strong>「知乎 Hackathon | AI 脑洞实验室」</strong>的参赛作品，属于<strong>「引力场」</strong>赛道——聚焦社区内容分发与社交互动。</p>
                 <ul>
                     <li><strong>后端：</strong>Python FastAPI + SQLite，调用知乎 API 获取内容</li>
@@ -459,7 +519,7 @@
                     <li><strong>IP 融合：</strong>以知乎吉祥物「刘看山」为核心 IP，打造评审团形象</li>
                 </ul>
                 <div class="highlight-box">
-                    <p> <strong>为什么叫「刘看山推荐」？</strong>刘看山是知乎的官方吉祥物，我们让它化身为 6 位不同性格的 AI 评审员，组成「刘看山评审团」，用可爱又专业的方式为优质内容把关。</p>
+                    <p><strong>为什么叫「刘看山推荐」？</strong>刘看山是知乎的官方吉祥物，我们让它化身为 6 位不同性格的 AI 评审员，组成「刘看山评审团」，用可爱又专业的方式为优质内容把关。</p>
                 </div>
             </div>
         </div>
@@ -470,18 +530,22 @@
         <div class="card">
             <div class="profile-header">
                 <img src="/assets/liukanshan/liukanshan-logo.png" alt="刘看山" class="profile-avatar">
-                <div><div class="profile-name" id="profile-name">演示用户</div><div class="profile-id">ID: <span id="profile-zhihu-id">demo_user</span></div></div>
-                <div class="profile-quota-box"><div class="profile-quota-num" id="profile-quota">100</div><div class="profile-quota-label">本周剩余额度</div></div>
+                <div><div class="profile-name" id="profile-name">演示用户</div><div class="profile-id">ID: <span id="profile-zhihu-id">demo_user</span></div><span class="profile-badge" id="profile-badge"></span></div>
+                <div class="profile-quota-box"><div class="profile-quota-num" id="profile-quota">100</div><div class="profile-quota-label">本月剩余额度</div></div>
             </div>
             <div class="stats-grid">
                 <div class="stat-item"><div class="stat-num" id="profile-total">0</div><div class="stat-label">总提交</div></div>
                 <div class="stat-item"><div class="stat-num" id="profile-recommended" style="color:var(--green)">0</div><div class="stat-label">推荐成功</div></div>
                 <div class="stat-item"><div class="stat-num" id="profile-rate" style="color:var(--accent)">0%</div><div class="stat-label">推荐率</div></div>
+                <div class="stat-item"><div class="stat-num" id="profile-followers" style="color:var(--ink)">0</div><div class="stat-label">粉丝</div></div>
+                <div class="stat-item"><div class="stat-num" id="profile-upvotes" style="color:var(--ink)">0</div><div class="stat-label">赞同</div></div>
+                <div class="stat-item"><div class="stat-num" id="profile-level-num" style="color:var(--accent)">0</div><div class="stat-label">等级</div></div>
             </div>
         </div>
         <div class="card-title" style="margin: 24px 0 12px;">评审历史</div>
         <div id="history-list"><div class="empty"><p>暂无评审记录</p></div></div>
     </div>
+
 </div>
 
 <!-- ═══ Footer ═══ -->
@@ -538,6 +602,35 @@
 </div>
 <div id="toast" class="toast"></div>
 
+<!-- ═══ Login Modal ═══ -->
+<div id="login-modal" class="overlay">
+    <div class="loading-box" style="padding:0">
+        <div class="card" style="min-width:380px;max-width:440px;border:none;margin:0">
+            <!-- Step 1: 发起 OAuth 授权 -->
+            <div id="login-step1">
+                <div class="card-title">登录知乎账号</div>
+                <p style="font-size:13px;color:var(--ink-4);margin-bottom:20px;line-height:1.7">通过知乎 OAuth 授权登录，我们将获取你的基本信息和发布的内容列表，用于提交评审。</p>
+                <button onclick="startOAuthLogin()" class="btn btn-primary" style="width:100%;padding:12px">授权登录知乎</button>
+                <p style="font-size:12px;color:var(--ink-5);margin-top:12px;margin-bottom:16px;text-align:center">点击后将跳转到知乎授权页面</p>
+                <button onclick="hideLogin()" class="btn btn-ghost" style="width:100%">取消</button>
+            </div>
+            <!-- Step 2: 粘贴授权码（回调无法自动接收时的备选方案） -->
+            <div id="login-step2" style="display:none">
+                <div class="card-title">完成授权</div>
+                <div style="font-size:13px;color:var(--ink-4);margin-bottom:16px;line-height:1.7">
+                    <p style="margin-bottom:8px">请在知乎页面点击「同意授权」。</p>
+                    <p>授权完成后，将浏览器地址栏中的完整 URL 粘贴到下方：</p>
+                </div>
+                <div class="form-row" style="margin-bottom:12px">
+                    <input id="oauth-code-input" type="text" placeholder="粘贴授权后地址栏的完整 URL" class="form-input" style="flex:1;font-family:monospace;font-size:13px">
+                </div>
+                <button onclick="finishOAuthWithCode()" class="btn btn-primary" style="width:100%">完成登录</button>
+                <button onclick="resetLoginModal()" class="btn btn-ghost" style="width:100%;margin-top:8px">返回</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ═══ JavaScript ═══ -->
 <script>
 const API_BASE = window.location.origin;
@@ -565,6 +658,224 @@ function hideLoading() { document.getElementById('loading-overlay').classList.re
 async function refreshQuota() {
     try { const r=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`); const d=await r.json(); document.getElementById('quota-count').textContent=d.remaining_quota; } catch(e) { console.error(e); }
 }
+
+// ── OAuth Login ──
+async function startOAuthLogin() {
+    try {
+        const r = await fetch(`${API_BASE}/api/oauth/start`);
+        const d = await r.json();
+        if (d.authorize_url) {
+            // 直接跳转到知乎授权页，授权后知乎会回调到后端，后端重定向回前端
+            window.location.href = d.authorize_url;
+        } else {
+            showToast(d.detail || 'OAuth 未配置');
+        }
+    } catch(e) {
+        showToast('启动登录失败，请重试');
+    }
+}
+function resetLoginModal() {
+    document.getElementById('login-step1').style.display = 'block';
+    document.getElementById('login-step2').style.display = 'none';
+    document.getElementById('oauth-code-input').value = '';
+}
+async function finishOAuthWithCode() {
+    let raw = document.getElementById('oauth-code-input').value.trim();
+    if (!raw) { showToast('请粘贴授权码'); return; }
+    // 支持粘贴完整 URL 或纯授权码
+    // 知乎回调 URL 格式: http://127.0.0.1/?code=xxx 或 http://127.0.0.1/?authorization_code=xxx
+    if (raw.includes('code=')) {
+        try {
+            const u = new URL(raw);
+            raw = u.searchParams.get('code') || u.searchParams.get('authorization_code') || raw;
+        } catch {
+            // URL 解析失败，用正则提取
+            const m = raw.match(/[?&](?:authorization_)?code=([^&]+)/);
+            if (m) raw = m[1];
+        }
+    }
+    await exchangeOAuthCode(raw);
+}
+async function exchangeOAuthCode(code) {
+    showLoading('正在完成登录...');
+    try {
+        const r = await fetch(`${API_BASE}/api/oauth/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code }),
+        });
+        if (!r.ok) {
+            const e = await r.json();
+            throw new Error(e.detail || '授权失败');
+        }
+        const d = await r.json();
+        if (d.success && d.user) {
+            currentUser = {
+                zhihu_id: d.user.zhihu_id,
+                zhihu_name: d.user.zhihu_name,
+                avatar_url: d.user.avatar_url,
+                oauth_login: true,
+            };
+            localStorage.setItem('zhihu_user', JSON.stringify(currentUser));
+            updateLoginUI({ level_info: { badge: d.user.badge } });
+            hideLoading();
+            hideLogin();
+            resetLoginModal();
+            showToast(`欢迎，${d.user.badge} ${d.user.zhihu_name}！`);
+            window.history.replaceState({}, '', '/');
+            refreshQuota();
+        } else {
+            throw new Error('未知错误');
+        }
+    } catch(e) {
+        hideLoading();
+        showToast(`登录失败: ${e.message}`);
+    }
+}
+async function handleOAuthCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code') || params.get('authorization_code');
+    const error = params.get('error');
+    const errMsg = params.get('message');
+    if (code) {
+        window.history.replaceState({}, '', '/');
+        await exchangeOAuthCode(code);
+    } else if (error || errMsg) {
+        showToast(`授权失败: ${errMsg ? decodeURIComponent(errMsg) : '请重试'}`);
+        window.history.replaceState({}, '', '/');
+    }
+}
+async function checkSessionValidity() {
+    const saved = localStorage.getItem('zhihu_user');
+    if (!saved) return;
+    try {
+        const user = JSON.parse(saved);
+        if (user.zhihu_id === 'demo_user') return;
+        // 只有通过 OAuth 登录的用户才需要检查 token 有效性
+        if (!user.oauth_login) return;
+        const r = await fetch(`${API_BASE}/api/user/${user.zhihu_id}/token/validate`);
+        const d = await r.json();
+        if (!d.valid) {
+            showToast('OAuth 登录已过期，部分功能需重新登录', 4000);
+        }
+    } catch(e) { /* 网络错误保持现有 session */ }
+}
+
+// ── My Content (用户发布的内容) ──
+async function loadMyContent() {
+    if (!currentUser.zhihu_id || currentUser.zhihu_id === 'demo_user') {
+        document.getElementById('my-content-card').classList.add('hidden');
+        return;
+    }
+    document.getElementById('my-content-card').classList.remove('hidden');
+    document.getElementById('my-content-list').innerHTML = '<div style="text-align:center;color:var(--ink-5);padding:20px">正在加载你的内容...</div>';
+    try {
+        const r = await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}/content`);
+        if (!r.ok) {
+            const e = await r.json();
+            document.getElementById('my-content-list').innerHTML = `<div style="text-align:center;color:var(--ink-5);padding:20px">${e.detail || '加载失败'}</div>`;
+            return;
+        }
+        const d = await r.json();
+        window._myContents = d.contents || [];
+        renderMyContent(window._myContents);
+    } catch(e) {
+        document.getElementById('my-content-list').innerHTML = '<div style="text-align:center;color:var(--ink-5);padding:20px">加载失败，请重试</div>';
+    }
+}
+window._myContentFilter = 'all';
+function filterMyContent(type) {
+    window._myContentFilter = type;
+    document.querySelectorAll('#my-content-filter .filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === type);
+        btn.style.background = btn.dataset.filter === type ? 'var(--ink)' : '';
+        btn.style.color = btn.dataset.filter === type ? '#fff' : '';
+    });
+    const all = window._myContents || [];
+    const filtered = type === 'all' ? all : all.filter(c => c.type === type);
+    renderMyContent(filtered);
+}
+function renderMyContent(contents) {
+    const el = document.getElementById('my-content-list');
+    if (!contents.length) {
+        el.innerHTML = '<div style="text-align:center;color:var(--ink-5);padding:20px">暂无该类型内容</div>';
+        return;
+    }
+    el.innerHTML = contents.map((c, i) => {
+        const globalIndex = (window._myContents || []).indexOf(c);
+        let typeLabel, typeColor;
+        if (c.type === 'article') { typeLabel = '文章'; typeColor = 'var(--zhihu-blue)'; }
+        else if (c.type === 'pin') { typeLabel = '想法'; typeColor = 'var(--zhihu-orange)'; }
+        else { typeLabel = '回答'; typeColor = 'var(--zhihu-green)'; }
+        const date = c.created_time ? new Date(c.created_time * 1000).toLocaleDateString('zh-CN') : '';
+        return `<div class="rec-card">
+            <div class="rec-meta">
+                <span style="background:${typeColor};color:#fff;padding:2px 8px;border-radius:4px;font-size:11px">${typeLabel}</span>
+                <span style="color:var(--ink-5);font-size:12px;margin-left:8px">${date}</span>
+                <span style="color:var(--ink-5);font-size:12px;margin-left:auto">${c.voteup_count || 0} 赞同 · ${c.comment_count || 0} 评论</span>
+            </div>
+            <div class="rec-title-text" style="margin:8px 0 4px">${c.title || '无标题'}</div>
+            <div class="rec-reason-text" style="font-size:13px;color:var(--ink-4);margin-bottom:12px">${(c.excerpt || '').slice(0, 120)}${c.excerpt && c.excerpt.length > 120 ? '...' : ''}</div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <a href="${c.url}" target="_blank" style="font-size:12px;color:var(--zhihu-blue)">查看原文</a>
+                <button onclick="submitMyContent(${globalIndex})" class="btn btn-primary" style="margin-left:auto;font-size:12px;padding:6px 16px">提交评审</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+async function submitMyContent(index) {
+    const c = (window._myContents || [])[index];
+    if (!c) return;
+    if (!c.url) { showToast('内容链接无效'); return; }
+    showLoading('刘看山评审团正在认真阅读你的内容');
+    try {
+        const r = await fetch(`${API_BASE}/api/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content_url: c.url,
+                zhihu_id: currentUser.zhihu_id,
+                zhihu_name: currentUser.zhihu_name,
+            }),
+        });
+        if (!r.ok) { const e = await r.json(); throw new Error(e.detail || '提交失败'); }
+        const d = await r.json();
+        hideLoading();
+        showResult(d);
+        showPage('result');
+        refreshQuota();
+    } catch(e) { hideLoading(); showToast(e.message); }
+}
+
+// ── Login (OAuth only) ──
+function showLogin() { resetLoginModal(); document.getElementById('login-modal').classList.add('show'); }
+function hideLogin() { document.getElementById('login-modal').classList.remove('show'); resetLoginModal(); }
+function updateLoginUI(d) {
+    document.getElementById('nav-login-btn').classList.add('hidden');
+    document.getElementById('nav-user-info').classList.remove('hidden');
+    document.getElementById('nav-user-name').textContent=currentUser.zhihu_name;
+    document.getElementById('nav-badge-text').textContent=d.level_info.badge;
+    loadMyContent();
+}
+function initLoginState() {
+    const saved=localStorage.getItem('zhihu_user');
+    if(saved){
+        try{
+            currentUser=JSON.parse(saved);
+            document.getElementById('nav-login-btn').classList.add('hidden');
+            document.getElementById('nav-user-info').classList.remove('hidden');
+            document.getElementById('nav-user-name').textContent=currentUser.zhihu_name;
+            refreshQuota().then(()=>{
+                fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`).then(r=>r.json()).then(d=>{
+                    document.getElementById('nav-badge-text').textContent=d.level_info.badge;
+                }).catch(()=>{});
+            });
+            loadMyContent();
+        }catch(e){localStorage.removeItem('zhihu_user');}
+    } else {
+        refreshQuota();
+    }
+}
 async function submitUrl() {
     const url=document.getElementById('input-url').value.trim();
     if(!url){showToast('请输入知乎内容链接');return;}
@@ -577,14 +888,42 @@ async function submitText() {
 }
 function scoreLevel(v){return v>=7?'high':v>=5?'mid':'low';}
 
+function triggerCelebration() {
+    // Create glow
+    const glow = document.createElement('div');
+    glow.className = 'celebrate-glow';
+    document.body.appendChild(glow);
+    // Create particle overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'celebrate-overlay';
+    const colors = ['#2F855A','#38A169','#48BB78','#68D391','#9AE6B4','#276749','#22543D','#F6E05E','#ECC94B','#D69E2E'];
+    for (let i = 0; i < 60; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        p.style.animationDelay = (Math.random() * 1.2) + 's';
+        p.style.animationDuration = (1.8 + Math.random() * 1.5) + 's';
+        const size = 4 + Math.random() * 8;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        if (Math.random() > 0.5) p.style.borderRadius = '2px';
+        overlay.appendChild(p);
+    }
+    document.body.appendChild(overlay);
+    // Cleanup after animation
+    setTimeout(() => { overlay.remove(); glow.remove(); }, 3500);
+}
+
 function showResult(data) {
     const isRec=data.status==='recommended', scores=data.scores, agents=data.agent_reports||{};
     const dims=[{key:'depth',label:'内容深度'},{key:'originality',label:'原创性'},{key:'readability',label:'可读性'},{key:'professionalism',label:'专业度'},{key:'community',label:'社区价值'},{key:'ai_detection',label:'人类原创'}];
     let scoreHtml=dims.map(d=>{const v=scores[d.key]||0,lv=scoreLevel(v),a=agents[d.key]||{};return`<div class="score-row"><div class="score-row-top"><span class="score-row-name">${d.label}</span><span class="score-row-value ${lv}">${v.toFixed(1)}</span></div><div class="score-bar-bg"><div class="score-bar-fill ${lv}" style="width:${v*10}%"></div></div>${a.comment?`<div class="score-comment">${a.comment}</div>`:''}</div>`;}).join('');
     let tipsHtml=''; if(data.improvement_tips&&data.improvement_tips.length){tipsHtml=`<div class="result-section"><div class="result-section-title">改进建议</div><ul class="tips-list">${data.improvement_tips.map((t,i)=>`<li class="tips-item"><span class="tips-num">${i+1}</span><span>${t}</span></li>`).join('')}</ul></div>`;}
-    const ol=scoreLevel(scores.overall), st=isRec?'推荐成功':data.status==='needs_improvement'?'有待提升':'暂未推荐', rt=isRec?(data.recommend_reason||'优质内容，值得推荐'):'查看下方建议，继续打磨你的内容';
+    const ol=scoreLevel(scores.overall), st=isRec?'推荐成功':'暂未推荐', rt=isRec?(data.recommend_reason||'优质内容，值得推荐'):'查看下方建议，继续打磨你的内容';
     document.getElementById('result-content').innerHTML=`<div style="margin-bottom:16px"><button onclick="showPage('home')" class="btn btn-ghost">← 返回</button></div><div class="result-header ${data.status}"><div class="result-score-ring ${ol}"><span class="result-score-num">${scores.overall.toFixed(1)}</span><span class="result-score-label">综合</span></div><div><div class="result-status">${st}</div><div class="result-reason">${rt}</div></div></div><div class="result-body"><div class="result-section"><div class="result-section-title">评审点评</div><div class="review-text">${data.review_summary||'感谢你的创作！'}</div></div><div class="result-section"><div class="result-section-title">各维度评分</div><div class="score-grid">${scoreHtml}</div></div>${tipsHtml}</div>`;
     showPage('result');
+    if (isRec) { setTimeout(triggerCelebration, 300); }
 }
 
 async function loadRecommendations() {
@@ -594,11 +933,17 @@ async function loadRecommendations() {
 }
 function renderRecommendations(list) {
     if(!list.length){document.getElementById('ranking-list').innerHTML=`<div class="empty"><div class="empty-icon"><img src="/assets/liukanshan/liukanshan-logo.png" alt=""></div><p>该分类暂无推荐内容</p></div>`;return;}
-    document.getElementById('ranking-list').innerHTML=list.map((rec,i)=>{const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'',rt=i<3?['①','②','③'][i]:`${i+1}`,sl=scoreLevel(rec.overall_score||0);return`<div class="rec-card"><div class="rec-top"><div class="rec-rank ${rc}">${rt}</div><div class="rec-body"><div class="rec-meta"><span class="rec-tag">${rec.category||'其他'}</span><span class="rec-author">${rec.zhihu_name||'匿名'}</span></div><div class="rec-title-text">${rec.content_title||'无标题'}</div>${rec.recommend_reason?`<div class="rec-reason-text">${rec.recommend_reason}</div>`:''}</div><div class="rec-score-box"><div class="rec-score-num ${sl}">${(rec.overall_score||0).toFixed(1)}</div><div class="rec-score-label">综合分</div></div></div></div>`;}).join('');
+    document.getElementById('ranking-list').innerHTML=list.map((rec,i)=>{const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'',rt=i<3?['①','②','③'][i]:`${i+1}`,sl=scoreLevel(rec.overall_score||0);return`<div class="rec-card" style="cursor:pointer" onclick="viewRecommendation(${rec.submission_id})"><div class="rec-top"><div class="rec-rank ${rc}">${rt}</div><div class="rec-body"><div class="rec-meta"><span class="rec-tag">${rec.category||'其他'}</span><span class="rec-author">${rec.zhihu_name||'匿名'}</span></div><div class="rec-title-text">${rec.content_title||'无标题'}</div>${rec.recommend_reason?`<div class="rec-reason-text">${rec.recommend_reason}</div>`:''}</div><div class="rec-score-box"><div class="rec-score-num ${sl}">${(rec.overall_score||0).toFixed(1)}</div><div class="rec-score-label">综合分</div></div></div></div>`;}).join('');
+}
+function viewRecommendation(submissionId) {
+    if (!submissionId) { showToast('暂无详情数据'); return; }
+    viewSubmission(submissionId);
 }
 
 async function loadProfile() {
-    try { const r=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`); const ud=await r.json(), u=ud.user; document.getElementById('profile-name').textContent=u.zhihu_name||currentUser.zhihu_name; document.getElementById('profile-zhihu-id').textContent=u.zhihu_id; document.getElementById('profile-quota').textContent=ud.remaining_quota; document.getElementById('profile-total').textContent=u.total_submissions; document.getElementById('profile-recommended').textContent=u.total_recommended; document.getElementById('profile-rate').textContent=(u.total_submissions>0?Math.round(u.total_recommended/u.total_submissions*100):0)+'%';
+    try { const r=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`); const ud=await r.json(), u=ud.user, li=ud.level_info||{}; document.getElementById('profile-name').textContent=u.zhihu_name||currentUser.zhihu_name; document.getElementById('profile-zhihu-id').textContent=u.zhihu_id; document.getElementById('profile-quota').textContent=ud.remaining_quota; document.getElementById('profile-total').textContent=u.total_submissions; document.getElementById('profile-recommended').textContent=u.total_recommended; document.getElementById('profile-rate').textContent=(u.total_submissions>0?Math.round(u.total_recommended/u.total_submissions*100):0)+'%';
+    document.getElementById('profile-followers').textContent=li.followers_count||0; document.getElementById('profile-upvotes').textContent=li.upvotes_count||0; document.getElementById('profile-level-num').textContent=(li.level||0);
+    const badge=document.getElementById('profile-badge'); badge.textContent=li.badge||'看山小萌新'; badge.className='profile-badge lv'+(li.level||0);
     const hr=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}/submissions`); const hd=await hr.json(), subs=hd.submissions||[]; if(!subs.length){document.getElementById('history-list').innerHTML=`<div class="empty"><p>暂无评审记录</p></div>`;return;}
     document.getElementById('history-list').innerHTML=subs.map(s=>{const ir=s.status==='recommended',bc=ir?'rec':s.status==='pending'?'pending':'rej',bt=ir?'已推荐':s.status==='pending'?'评审中':'未推荐',sl=scoreLevel(s.overall_score||0);return`<div class="history-card" onclick="viewSubmission(${s.id})"><div><div style="display:flex;align-items:center;gap:6px"><span class="history-badge ${bc}">${bt}</span><span class="history-time">${s.created_at||''}</span></div><div class="history-title truncate">${s.content_title||'无标题'}</div></div><div class="history-score ${sl}">${(s.overall_score||0).toFixed(1)}</div></div>`;}).join('');
     } catch(e){console.error(e);}
@@ -637,13 +982,20 @@ function renderMockProfile() {
     const rc=MOCK_HISTORY.filter(s=>s.status==='recommended').length;
     document.getElementById('profile-recommended').textContent=rc;
     document.getElementById('profile-rate').textContent=(MOCK_HISTORY.length>0?Math.round(rc/MOCK_HISTORY.length*100):0)+'%';
+    document.getElementById('profile-followers').textContent='0';
+    document.getElementById('profile-upvotes').textContent='0';
+    document.getElementById('profile-level-num').textContent='0';
+    const badge=document.getElementById('profile-badge');
+    badge.textContent='看山小萌新'; badge.className='profile-badge lv0';
     document.getElementById('history-list').innerHTML=MOCK_HISTORY.map(s=>{const ir=s.status==='recommended',bc=ir?'rec':s.status==='needs_improvement'?'pending':'rej',bt=ir?'已推荐':s.status==='needs_improvement'?'待提升':'未推荐',sl=scoreLevel(s.overall_score||0);return`<div class="history-card"><div><div style="display:flex;align-items:center;gap:6px"><span class="history-badge ${bc}">${bt}</span><span class="history-time">${s.created_at||''}</span></div><div class="history-title truncate">${s.content_title||'无标题'}</div></div><div class="history-score ${sl}">${(s.overall_score||0).toFixed(1)}</div></div>`;}).join('');
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
-    refreshQuota();
+    handleOAuthCallback();
+    initLoginState();
     renderRecommendations(MOCK_RECOMMENDATIONS);
-    renderMockProfile();
+    checkSessionValidity();
 });
 </script>
 </body>

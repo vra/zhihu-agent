@@ -17,6 +17,7 @@ from openai import AsyncOpenAI
 from config import (
     OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL,
     AGENT_WEIGHTS, RECOMMEND_THRESHOLD, HIGH_SCORE_THRESHOLD,
+    CONTENT_CATEGORIES,
 )
 
 # 初始化 OpenAI 客户端
@@ -26,7 +27,7 @@ llm = AsyncOpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
 
 AGENTS = {
     "depth": {
-        "name": "🎓 学术山",
+        "name": "学术山",
         "role": "严谨的学者",
         "system_prompt": """你是「学术山」，刘看山评审团中的学术派成员。你是一位严谨的学者，专注于评估内容的深度和逻辑性。
 
@@ -45,7 +46,7 @@ AGENTS = {
 }""",
     },
     "readability": {
-        "name": "📖 阅读山",
+        "name": "阅读山",
         "role": "挑剔的读者",
         "system_prompt": """你是「阅读山」，刘看山评审团中的读者派成员。你是一位挑剔的读者，专注于评估内容的可读性和阅读体验。
 
@@ -64,7 +65,7 @@ AGENTS = {
 }""",
     },
     "originality": {
-        "name": "💡 创意山",
+        "name": "创意山",
         "role": "追求新意的创意人",
         "system_prompt": """你是「创意山」，刘看山评审团中的原创派成员。你追求新意，厌恶陈词滥调，专注于评估内容的原创性。
 
@@ -83,7 +84,7 @@ AGENTS = {
 }""",
     },
     "community": {
-        "name": "🤝 社区山",
+        "name": "社区山",
         "role": "资深知乎用户",
         "system_prompt": """你是「社区山」，刘看山评审团中的社区派成员。你是一位资深知乎用户，了解社区文化，专注于评估内容的社区价值。
 
@@ -102,7 +103,7 @@ AGENTS = {
 }""",
     },
     "ai_detection": {
-        "name": "🔍 鉴真山",
+        "name": "鉴真山",
         "role": "AI 内容鉴别专家",
         "system_prompt": """你是「鉴真山」，刘看山评审团中的 AI 内容鉴别专家。你专门负责检测内容是否由 AI 生成。
 
@@ -128,17 +129,54 @@ AGENTS = {
     },
 }
 
+# ──────────────────── 内容分类预判 ────────────────────
+
+async def classify_content(title: str, body_preview: str) -> str:
+    """快速判定内容分类（轻量调用，仅返回分类名）"""
+    categories = "、".join(CONTENT_CATEGORIES.keys())
+    try:
+        resp = await llm.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": f"你是一个内容分类助手。请将用户给出的内容分类到以下类别之一：{categories}。只输出类别名称，不要输出任何其他内容。"},
+                {"role": "user", "content": f"标题：{title}\n正文：{body_preview[:200]}"},
+            ],
+            temperature=0,
+            max_tokens=200,
+        )
+        raw = resp.choices[0].message.content.strip()
+        # 清理可能的引号、标点
+        category = raw.replace("\"", "").replace("'", "").replace("。", "").replace("，", "").strip()
+        if category not in CONTENT_CATEGORIES:
+            # 尝试模糊匹配（如返回"科技类"只取前两字）
+            for cat_name in CONTENT_CATEGORIES:
+                if cat_name in category:
+                    category = cat_name
+                    break
+            else:
+                category = "其他"
+        return category
+    except Exception as e:
+        print(f"[review_engine] classify_content error: {e}")
+        return "其他"
+
+
 # ──────────────────── 单 Agent 评审 ────────────────────
 
-async def run_single_agent(agent_key: str, content_title: str, content_body: str) -> dict:
+async def run_single_agent(agent_key: str, content_title: str, content_body: str, category: str = "") -> dict:
     """运行单个 Agent 评审"""
     agent = AGENTS[agent_key]
+    category_hint = ""
+    if category and category in CONTENT_CATEGORIES:
+        cat_info = CONTENT_CATEGORIES[category]
+        category_hint = f"\n\n【内容分类：{category}】评审侧重：{cat_info['emphasis']}\n请根据该分类特点适当调整评分侧重。"
+
     user_message = f"""请评审以下知乎内容：
 
 【标题】{content_title}
 
 【正文】
-{content_body[:3000]}
+{content_body[:3000]}{category_hint}
 """
     try:
         response = await llm.chat.completions.create(
@@ -181,7 +219,7 @@ async def run_single_agent(agent_key: str, content_title: str, content_body: str
 
 # ──────────────────── 专业度评估（综合判断） ────────────────────
 
-async def evaluate_professionalism(content_title: str, content_body: str) -> dict:
+async def evaluate_professionalism(content_title: str, content_body: str, category: str = "") -> dict:
     """专业度评估 - 由综合 prompt 判断"""
     system_prompt = """你是一位专业度评审专家，负责评估内容的专业水平。
 
@@ -199,12 +237,17 @@ async def evaluate_professionalism(content_title: str, content_body: str) -> dic
   "details": "详细评审意见（100-200字）"
 }"""
 
+    category_hint = ""
+    if category and category in CONTENT_CATEGORIES:
+        cat_info = CONTENT_CATEGORIES[category]
+        category_hint = f"\n\n【内容分类：{category}】评审侧重：{cat_info['emphasis']}\n请根据该分类特点适当调整评分侧重。"
+
     user_message = f"""请评审以下知乎内容的专业度：
 
 【标题】{content_title}
 
 【正文】
-{content_body[:3000]}
+{content_body[:3000]}{category_hint}
 """
     try:
         response = await llm.chat.completions.create(
@@ -226,7 +269,7 @@ async def evaluate_professionalism(content_title: str, content_body: str) -> dic
         result = json.loads(result_text)
         return {
             "agent": "professionalism",
-            "name": "🎯 专业度",
+            "name": "专业度",
             "score": float(result.get("score", 5.0)),
             "comment": result.get("comment", ""),
             "details": result.get("details", ""),
@@ -235,7 +278,7 @@ async def evaluate_professionalism(content_title: str, content_body: str) -> dic
         print(f"[review_engine] professionalism error: {e}")
         return {
             "agent": "professionalism",
-            "name": "🎯 专业度",
+            "name": "专业度",
             "score": 5.0,
             "comment": "评审过程中出现异常",
             "details": f"评审异常: {str(e)}",
@@ -244,7 +287,7 @@ async def evaluate_professionalism(content_title: str, content_body: str) -> dic
 
 # ──────────────────── 刘看山汇总 ────────────────────
 
-async def generate_summary(content_title: str, agent_results: list[dict], overall_score: float) -> dict:
+async def generate_summary(content_title: str, agent_results: list[dict], overall_score: float, category: str = "") -> dict:
     """刘看山汇总评语和改进建议"""
     # 构建评审摘要
     reviews_text = "\n".join([
@@ -253,27 +296,26 @@ async def generate_summary(content_title: str, agent_results: list[dict], overal
     ])
 
     if overall_score >= RECOMMEND_THRESHOLD:
-        status = "推荐成功 🏆"
+        status = "推荐成功"
     else:
-        status = "暂未推荐 📝"
+        status = "暂未推荐"
 
-    system_prompt = """你是「刘看山」，知乎的官方吉祥物，也是内容评审团的团长。
+    system_prompt = f"""你是「刘看山」，知乎的官方吉祥物，也是内容评审团的团长。
 你性格温暖、有趣、鼓励创作，但也会诚恳地指出不足。
 请根据各位评审员的评审结果，生成：
 1. 一段综合评语（以刘看山的口吻，150字左右，温暖但专业）
-2. 3条具体可操作的改进建议
+2. 3条具体可操作的改进建议（结合「{category}」类内容的特点给出针对性建议）
 3. 一句推荐理由（如果推荐成功的话，30字以内）
-4. 内容分类（从以下选择一个：科技、人文、生活、职场、教育、财经、健康、娱乐、其他）
 
 请严格按照以下 JSON 格式输出：
-{
+{{
   "summary": "综合评语",
   "tips": ["建议1", "建议2", "建议3"],
-  "recommend_reason": "推荐理由",
-  "category": "分类"
-}"""
+  "recommend_reason": "推荐理由"
+}}"""
 
     user_message = f"""内容标题：{content_title}
+内容分类：{category or '其他'}
 综合评分：{overall_score:.1f}/10
 评审状态：{status}
 
@@ -304,7 +346,6 @@ async def generate_summary(content_title: str, agent_results: list[dict], overal
             "summary": f"综合评分 {overall_score:.1f} 分。感谢你的创作！",
             "tips": ["继续保持创作热情", "可以尝试更深入的分析", "注意文章结构的优化"],
             "recommend_reason": "值得一读的内容",
-            "category": "其他",
         }
 
 
@@ -315,14 +356,18 @@ async def run_full_review(content_title: str, content_body: str) -> dict:
     运行完整的多 Agent 评审流程
     返回完整的评审结果
     """
-    # 1. 并行运行 5 个 Agent + 专业度评估
+    # 0. 快速分类（轻量调用）
+    category = await classify_content(content_title, content_body)
+    print(f"[review_engine] 内容分类: {category}")
+
+    # 1. 并行运行 5 个 Agent + 专业度评估（传入分类上下文）
     tasks = [
-        run_single_agent("depth", content_title, content_body),
-        run_single_agent("readability", content_title, content_body),
-        run_single_agent("originality", content_title, content_body),
-        run_single_agent("community", content_title, content_body),
-        run_single_agent("ai_detection", content_title, content_body),
-        evaluate_professionalism(content_title, content_body),
+        run_single_agent("depth", content_title, content_body, category),
+        run_single_agent("readability", content_title, content_body, category),
+        run_single_agent("originality", content_title, content_body, category),
+        run_single_agent("community", content_title, content_body, category),
+        run_single_agent("ai_detection", content_title, content_body, category),
+        evaluate_professionalism(content_title, content_body, category),
     ]
     agent_results = await asyncio.gather(*tasks)
 
@@ -342,8 +387,8 @@ async def run_full_review(content_title: str, content_body: str) -> dict:
     )
     overall_score = round(overall_score, 1)
 
-    # 3. 刘看山汇总
-    summary_result = await generate_summary(content_title, agent_results, overall_score)
+    # 3. 刘看山汇总（传入分类）
+    summary_result = await generate_summary(content_title, agent_results, overall_score, category)
 
     # 4. 判定状态
     if overall_score >= RECOMMEND_THRESHOLD:
@@ -351,7 +396,7 @@ async def run_full_review(content_title: str, content_body: str) -> dict:
     else:
         status = "rejected"
 
-    # 5. 组装结果
+    # 5. 组装结果（使用预判分类，不依赖 summary agent）
     return {
         "scores": {
             "overall": overall_score,
@@ -366,7 +411,7 @@ async def run_full_review(content_title: str, content_body: str) -> dict:
         "review_summary": summary_result.get("summary", ""),
         "improvement_tips": summary_result.get("tips", []),
         "recommend_reason": summary_result.get("recommend_reason", ""),
-        "category": summary_result.get("category", "其他"),
+        "category": category,
         "agent_reports": {r["agent"]: {
             "name": r["name"],
             "score": r["score"],
