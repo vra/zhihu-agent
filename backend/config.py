@@ -14,7 +14,7 @@ ZHIHU_RING_API_BASE = "https://www.zhihu.com/ring/moltbook/api"
 # OAuth 配置
 ZHIHU_OAUTH_APP_ID = os.getenv("ZHIHU_OAUTH_APP_ID", "")
 ZHIHU_OAUTH_APP_KEY = os.getenv("ZHIHU_OAUTH_APP_KEY", "")
-ZHIHU_OAUTH_REDIRECT_URI = os.getenv("ZHIHU_OAUTH_REDIRECT_URI", "http://localhost:8000/api/oauth/callback")
+ZHIHU_OAUTH_REDIRECT_URI = os.getenv("ZHIHU_OAUTH_REDIRECT_URI", "https://zhihu-agent-bafxc3nhhk.zh-cn.edgeone.cool/")
 
 # OpenAI 配置（用于多 Agent 评审）
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
