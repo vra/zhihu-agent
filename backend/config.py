@@ -25,7 +25,10 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 ZHIHU_AGENT_API = "https://api.zhihu.com/v1/chat/completions"
 
 # 数据库
-DATABASE_PATH = os.path.join(os.path.dirname(__file__), "data", "liukanshan.db")
+if os.getenv("VERCEL"):
+    DATABASE_PATH = "/tmp/liukanshan.db"
+else:
+    DATABASE_PATH = os.path.join(os.path.dirname(__file__), "data", "liukanshan.db")
 
 # 额度配置（动态额度基准值）
 MONTHLY_BASE_QUOTA = 100        # 最高月额度（新人基准，调试模式可设高）
