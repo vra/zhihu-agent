@@ -606,27 +606,14 @@
 <div id="login-modal" class="overlay">
     <div class="loading-box" style="padding:0">
         <div class="card" style="min-width:380px;max-width:440px;border:none;margin:0">
-            <!-- Step 1: 发起 OAuth 授权 -->
-            <div id="login-step1">
-                <div class="card-title">登录知乎账号</div>
-                <p style="font-size:13px;color:var(--ink-4);margin-bottom:20px;line-height:1.7">通过知乎 OAuth 授权登录，我们将获取你的基本信息和发布的内容列表，用于提交评审。</p>
-                <button onclick="startOAuthLogin()" class="btn btn-primary" style="width:100%;padding:12px">授权登录知乎</button>
-                <p style="font-size:12px;color:var(--ink-5);margin-top:12px;margin-bottom:16px;text-align:center">点击后将跳转到知乎授权页面</p>
-                <button onclick="hideLogin()" class="btn btn-ghost" style="width:100%">取消</button>
+            <div class="card-title">登录知乎账号</div>
+            <p style="font-size:13px;color:var(--ink-4);margin-bottom:16px;line-height:1.7">粘贴你的知乎个人主页链接即可登录，登录后可查看你发布的内容并提交评审。</p>
+            <div class="form-row" style="margin-bottom:12px">
+                <input id="login-url" type="url" placeholder="https://www.zhihu.com/people/your-id" class="form-input" style="flex:1">
+                <button onclick="doLogin()" class="btn btn-primary" style="white-space:nowrap">登录</button>
             </div>
-            <!-- Step 2: 粘贴授权码（回调无法自动接收时的备选方案） -->
-            <div id="login-step2" style="display:none">
-                <div class="card-title">完成授权</div>
-                <div style="font-size:13px;color:var(--ink-4);margin-bottom:16px;line-height:1.7">
-                    <p style="margin-bottom:8px">请在知乎页面点击「同意授权」。</p>
-                    <p>授权完成后，将浏览器地址栏中的完整 URL 粘贴到下方：</p>
-                </div>
-                <div class="form-row" style="margin-bottom:12px">
-                    <input id="oauth-code-input" type="text" placeholder="粘贴授权后地址栏的完整 URL" class="form-input" style="flex:1;font-family:monospace;font-size:13px">
-                </div>
-                <button onclick="finishOAuthWithCode()" class="btn btn-primary" style="width:100%">完成登录</button>
-                <button onclick="resetLoginModal()" class="btn btn-ghost" style="width:100%;margin-top:8px">返回</button>
-            </div>
+            <p style="font-size:12px;color:var(--ink-5);margin-bottom:16px">打开知乎 - 点头像进入个人主页 - 复制浏览器地址栏链接</p>
+            <button onclick="hideLogin()" class="btn btn-ghost" style="width:100%">取消</button>
         </div>
     </div>
 </div>
@@ -659,106 +646,27 @@ async function refreshQuota() {
     try { const r=await fetch(`${API_BASE}/api/user/${currentUser.zhihu_id}`); const d=await r.json(); document.getElementById('quota-count').textContent=d.remaining_quota; } catch(e) { console.error(e); }
 }
 
-// ── OAuth Login ──
-async function startOAuthLogin() {
+// ── Login ──
+async function doLogin() {
+    const url = document.getElementById('login-url').value.trim();
+    if (!url) { showToast('请输入知乎个人主页链接'); return; }
+    showLoading('正在获取你的知乎信息');
     try {
-        const r = await fetch(`${API_BASE}/api/oauth/start`);
-        const d = await r.json();
-        if (d.authorize_url) {
-            // 直接跳转到知乎授权页，授权后知乎会回调到后端，后端重定向回前端
-            window.location.href = d.authorize_url;
-        } else {
-            showToast(d.detail || 'OAuth 未配置');
-        }
-    } catch(e) {
-        showToast('启动登录失败，请重试');
-    }
-}
-function resetLoginModal() {
-    document.getElementById('login-step1').style.display = 'block';
-    document.getElementById('login-step2').style.display = 'none';
-    document.getElementById('oauth-code-input').value = '';
-}
-async function finishOAuthWithCode() {
-    let raw = document.getElementById('oauth-code-input').value.trim();
-    if (!raw) { showToast('请粘贴授权码'); return; }
-    // 支持粘贴完整 URL 或纯授权码
-    // 知乎回调 URL 格式: http://127.0.0.1/?code=xxx 或 http://127.0.0.1/?authorization_code=xxx
-    if (raw.includes('code=')) {
-        try {
-            const u = new URL(raw);
-            raw = u.searchParams.get('code') || u.searchParams.get('authorization_code') || raw;
-        } catch {
-            // URL 解析失败，用正则提取
-            const m = raw.match(/[?&](?:authorization_)?code=([^&]+)/);
-            if (m) raw = m[1];
-        }
-    }
-    await exchangeOAuthCode(raw);
-}
-async function exchangeOAuthCode(code) {
-    showLoading('正在完成登录...');
-    try {
-        const r = await fetch(`${API_BASE}/api/oauth/token`, {
+        const r = await fetch(`${API_BASE}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code }),
+            body: JSON.stringify({ profile_url: url }),
         });
-        if (!r.ok) {
-            const e = await r.json();
-            throw new Error(e.detail || '授权失败');
-        }
+        if (!r.ok) { const e = await r.json(); throw new Error(e.detail || '登录失败'); }
         const d = await r.json();
-        if (d.success && d.user) {
-            currentUser = {
-                zhihu_id: d.user.zhihu_id,
-                zhihu_name: d.user.zhihu_name,
-                avatar_url: d.user.avatar_url,
-                oauth_login: true,
-            };
-            localStorage.setItem('zhihu_user', JSON.stringify(currentUser));
-            updateLoginUI({ level_info: { badge: d.user.badge } });
-            hideLoading();
-            hideLogin();
-            resetLoginModal();
-            showToast(`欢迎，${d.user.badge} ${d.user.zhihu_name}！`);
-            window.history.replaceState({}, '', '/');
-            refreshQuota();
-        } else {
-            throw new Error('未知错误');
-        }
-    } catch(e) {
+        currentUser = { zhihu_id: d.user.zhihu_id, zhihu_name: d.user.zhihu_name, avatar_url: d.user.avatar_url || '' };
+        localStorage.setItem('zhihu_user', JSON.stringify(currentUser));
+        updateLoginUI(d);
+        hideLogin();
         hideLoading();
-        showToast(`登录失败: ${e.message}`);
-    }
-}
-async function handleOAuthCallback() {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code') || params.get('authorization_code');
-    const error = params.get('error');
-    const errMsg = params.get('message');
-    if (code) {
-        window.history.replaceState({}, '', '/');
-        await exchangeOAuthCode(code);
-    } else if (error || errMsg) {
-        showToast(`授权失败: ${errMsg ? decodeURIComponent(errMsg) : '请重试'}`);
-        window.history.replaceState({}, '', '/');
-    }
-}
-async function checkSessionValidity() {
-    const saved = localStorage.getItem('zhihu_user');
-    if (!saved) return;
-    try {
-        const user = JSON.parse(saved);
-        if (user.zhihu_id === 'demo_user') return;
-        // 只有通过 OAuth 登录的用户才需要检查 token 有效性
-        if (!user.oauth_login) return;
-        const r = await fetch(`${API_BASE}/api/user/${user.zhihu_id}/token/validate`);
-        const d = await r.json();
-        if (!d.valid) {
-            showToast('OAuth 登录已过期，部分功能需重新登录', 4000);
-        }
-    } catch(e) { /* 网络错误保持现有 session */ }
+        showToast(`欢迎，${d.level_info.badge} ${currentUser.zhihu_name}`);
+        refreshQuota();
+    } catch(e) { hideLoading(); showToast(e.message); }
 }
 
 // ── My Content (用户发布的内容) ──
@@ -847,9 +755,8 @@ async function submitMyContent(index) {
     } catch(e) { hideLoading(); showToast(e.message); }
 }
 
-// ── Login (OAuth only) ──
-function showLogin() { resetLoginModal(); document.getElementById('login-modal').classList.add('show'); }
-function hideLogin() { document.getElementById('login-modal').classList.remove('show'); resetLoginModal(); }
+function showLogin() { document.getElementById('login-modal').classList.add('show'); }
+function hideLogin() { document.getElementById('login-modal').classList.remove('show'); document.getElementById('login-url').value = ''; }
 function updateLoginUI(d) {
     document.getElementById('nav-login-btn').classList.add('hidden');
     document.getElementById('nav-user-info').classList.remove('hidden');
@@ -992,10 +899,8 @@ function renderMockProfile() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    handleOAuthCallback();
     initLoginState();
     renderRecommendations(MOCK_RECOMMENDATIONS);
-    checkSessionValidity();
 });
 </script>
 </body>

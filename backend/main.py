@@ -131,6 +131,44 @@ async def get_user_info(zhihu_id: str):
 
 
 
+class LoginRequest(BaseModel):
+    """知乎登录请求"""
+    profile_url: str
+
+
+@app.post("/api/login")
+async def zhihu_login(req: LoginRequest):
+    """
+    知乎账号登录：通过个人主页链接获取用户信息
+    """
+    profile = await fetch_user_profile(req.profile_url)
+    if not profile:
+        raise HTTPException(status_code=400, detail="无法获取知乎用户信息，请检查链接是否正确")
+
+    user = await get_or_create_user(
+        zhihu_id=profile["slug"],
+        zhihu_name=profile["zhihu_name"],
+        avatar_url=profile["avatar_url"],
+        followers_count=profile["followers_count"],
+        upvotes_count=profile["upvotes_count"],
+    )
+
+    if profile["slug"] and not user.get("url_token"):
+        await update_user_url_token(profile["slug"], profile["slug"])
+
+    remaining_quota = user["monthly_quota"] - user["quota_used"]
+    return {
+        "user": user,
+        "remaining_quota": max(0, remaining_quota),
+        "level_info": {
+            "level": user.get("level", 0),
+            "badge": user.get("badge", "看山小萌新"),
+            "followers_count": user.get("followers_count", 0),
+            "upvotes_count": user.get("upvotes_count", 0),
+        },
+    }
+
+
 class UpdateStatsRequest(BaseModel):
     """更新用户社交数据"""
     followers_count: int = 0

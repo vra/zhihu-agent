@@ -60,3 +60,4 @@ frontend/dist/
 
 # EdgeOne deploy artifacts
 frontend-deploy/
+.vercel
