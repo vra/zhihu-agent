@@ -224,7 +224,6 @@ async def fetch_user_profile(profile_url_or_id: str) -> dict | None:
     slug = profile_url_or_id.strip().rstrip("/")
     if "/" in slug:
         slug = slug.rstrip("/").rsplit("/", 1)[-1]
-    # 去掉可能的 ? 参数
     slug = slug.split("?")[0]
 
     profile = {
@@ -236,66 +235,72 @@ async def fetch_user_profile(profile_url_or_id: str) -> dict | None:
     }
 
     try:
-        url = f"https://www.zhihu.com/people/{slug}"
-        cookie_dict = _get_browser_cookies()
-        async with httpx.AsyncClient(timeout=15, follow_redirects=True, proxy=None, cookies=cookie_dict) as client:
+        # 使用知乎 v4 API 获取用户信息（无需登录，公开接口）
+        api_url = f"https://www.zhihu.com/api/v4/members/{slug}?include=follower_count,voteup_count,avatar_url"
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True, proxy=None) as client:
+            resp = await client.get(api_url, headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+                "Accept": "application/json",
+                "Referer": "https://www.zhihu.com/",
+            })
+            if resp.status_code == 200:
+                data = resp.json()
+                profile["zhihu_name"] = data.get("name", "")
+                profile["avatar_url"] = data.get("avatar_url", "")
+                profile["followers_count"] = data.get("follower_count", 0)
+                profile["upvotes_count"] = data.get("voteup_count", 0)
+                if profile["zhihu_name"]:
+                    return profile
+
+            # 如果 v4 API 失败，回退到爬 HTML 页面
+            print(f"[zhihu_client] v4 API failed ({resp.status_code}), falling back to HTML")
+            url = f"https://www.zhihu.com/people/{slug}"
             resp = await client.get(url, headers={
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
                 "Accept": "text/html,application/xhtml+xml",
                 "Accept-Language": "zh-CN,zh;q=0.9",
             })
             if resp.status_code != 200:
-                print(f"[zhihu_client] fetch_user_profile: HTTP {resp.status_code} for {url}")
-                return None
+                print(f"[zhihu_client] fetch_user_profile: HTTP {resp.status_code}")
+                # 即使获取不到详细信息，也用 slug 作为用户名返回
+                profile["zhihu_name"] = slug
+                return profile
 
             html = resp.text
-
-            # 从 <title> 提取用户名
-            title_match = re.search(r"<title[^>]*>(.*?)的知乎个人主页.*?</title>", html)
+            title_match = re.search(r"<title[^>]*>(.*?)(?:的知乎个人主页| - 知乎)</title>", html)
             if title_match:
                 profile["zhihu_name"] = title_match.group(1).strip()
-            else:
-                title_match = re.search(r"<title[^>]*>(.*?) - 知乎</title>", html)
-                if title_match:
-                    profile["zhihu_name"] = title_match.group(1).strip()
 
-            # 从 meta 提取头像
             avatar_match = re.search(r'<meta\s+property="og:image"\s+content="(.*?)"', html)
             if avatar_match:
                 profile["avatar_url"] = avatar_match.group(1)
 
-            # 从 HTML 提取粉丝数和赞同数
-            # 知乎个人主页数据一般在 JSON 内
             init_data = re.search(r'id="js-initialData"\s+type="text/json">(.*?)</script>', html)
             if init_data:
                 try:
                     data = json.loads(init_data.group(1))
-                    # 可能路径: initialState.entities.users[slug]
                     entities = data.get("initialState", {}).get("entities", {}).get("users", {})
                     for uid, uinfo in entities.items():
                         if uinfo.get("urlToken") == slug or uinfo.get("id") == slug:
                             profile["zhihu_name"] = uinfo.get("name", profile["zhihu_name"])
                             profile["avatar_url"] = uinfo.get("avatarUrl", profile["avatar_url"])
                             profile["followers_count"] = uinfo.get("followerCount", 0)
-                            # 赞同数可能在 voteupCount
                             profile["upvotes_count"] = uinfo.get("voteupCount", 0) or uinfo.get("thankCount", 0)
                             break
                 except (json.JSONDecodeError, KeyError, TypeError) as e:
                     print(f"[zhihu_client] parse initialData failed: {e}")
 
-            # 如果 JSON 解析失败，用正则兜底
-            if profile["followers_count"] == 0:
-                followers_match = re.search(r'[' '"]' + re.escape('followerCount') + r'[' '"]' + r'\s*:\s*(\d+)', html)
-                if followers_match:
-                    profile["followers_count"] = int(followers_match.group(1))
-
-        if profile["zhihu_name"]:
-            return profile
-        return None
+        # 即使获取不到详细信息，也允许用 slug 登录
+        if not profile["zhihu_name"]:
+            profile["zhihu_name"] = slug
+        return profile
 
     except Exception as e:
         print(f"[zhihu_client] fetch_user_profile error: {e}")
-        return None
+        # 即使发生异常，也允许用 slug 登录（避免海外服务器网络问题导致登录失败）
+        if not profile["zhihu_name"]:
+            profile["zhihu_name"] = slug
+        return profile
 
 async def fetch_content_by_url(url: str) -> dict | None:
     """
